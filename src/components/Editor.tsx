@@ -1,6 +1,14 @@
-import { forwardRef } from "react";
+import { forwardRef, useEffect } from "react";
+interface EditorProps {
+  initialHtml?: string;
+}
 
-const Editor = forwardRef<HTMLDivElement>((_, ref) => {
+const Editor = forwardRef<HTMLDivElement, EditorProps>(({ initialHtml }, ref) => {
+  useEffect(() => {
+    if (ref && typeof ref !== 'function' && ref.current && initialHtml) {
+      ref.current.innerHTML = initialHtml;
+    }
+  }, [ref, initialHtml]);
   return (
     <div
       ref={ref}

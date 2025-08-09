@@ -13,7 +13,24 @@ import LinkDropdown from "./LinkDropdown";
 import Editor from "./Editor";
 
 
-const TextEditor = () => {
+
+interface TextEditorProps {
+  initialHtml?: string;
+  fullHtml?: string;
+}
+
+const extractBodyFromHtml = (html?: string) => {
+  if (!html) return '';
+  try {
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    return doc.body.innerHTML;
+  } catch {
+    return html;
+  }
+};
+
+const TextEditor: React.FC<TextEditorProps> = ({ initialHtml, fullHtml }) => {
+  const bodyHtml = fullHtml ? extractBodyFromHtml(fullHtml) : initialHtml;
   const [align, setAlign] = useState("");
   const [boldActive, setBoldActive] = useState(false);
   const [italicActive, setItalicActive] = useState(false);
@@ -24,6 +41,7 @@ const TextEditor = () => {
   const [unorderedListActive, setUnorderedListActive] = useState(false);
   const [linkDropdownOpen, setLinkDropdownOpen] = useState(false);
   const [linkUrl, setLinkUrl] = useState("");
+
 
   const handleSelectionChange = useCallback(() => {
     requestAnimationFrame(() => {
@@ -72,7 +90,6 @@ const TextEditor = () => {
 
       if (editorRef.current) {
         const dirtyHTML = editorRef.current.innerHTML;
-        // console.log("dirty", dirtyHTML);
         const cleanHTML = sanitizeHTML(dirtyHTML);
         console.log(cleanHTML);
       }
@@ -230,7 +247,7 @@ const TextEditor = () => {
           insertLink={insertLink}
         />
       </div>
-      <Editor ref={editorRef} />
+      <Editor ref={editorRef} initialHtml={bodyHtml} />
     </div>
   );
 };
