@@ -1,36 +1,19 @@
-import React, { useRef, useState, useEffect, useCallback } from "react";
-import AlignLeftIcons from "./icons/AlignLeft.icon";
-import AlignCenterIcons from "./icons/AlignCenter.icon";
-import AlignRightIcons from "./icons/AlignRight.icon";
-import Underline from "./icons/Underline.icon";
-import ItalicIcon from "./icons/Italics.icon";
-import BoldIcon from "./icons/Bold.icon";
-import { sanitizeHTML } from "../lib/SantizeHtml";
-import UnorderedListIcon from "./icons/UnorderedList.icon";
-import OrderedListIcon from "./icons/OrderedList.icon";
-import ToolbarButton from "./ToolbarButton";
-import LinkDropdown from "./LinkDropdown";
-import Editor from "./Editor";
 
+import { useRef, useState, useEffect, useCallback } from "react";
+import AlignLeftIcons from "../components/icons/AlignLeft.icon";
+import AlignCenterIcons from "../components/icons/AlignCenter.icon";
+import AlignRightIcons from "../components/icons/AlignRight.icon";
+import Underline from "../components/icons/Underline.icon";
+import ItalicIcon from "../components/icons/Italics.icon";
+import BoldIcon from "../components/icons/Bold.icon";
+import { sanitizeHTML } from "../lib/./SantizeHtml";
+import UnorderedListIcon from "../components/icons/UnorderedList.icon";
+import OrderedListIcon from "../components/icons/OrderedList.icon";
+import ToolbarButton from "../components/ToolbarButton";
+import LinkDropdown from "../components/LinkDropdown";
+import Editor from "../components/Editor";
 
-
-interface TextEditorProps {
-  initialHtml?: string;
-  fullHtml?: string;
-}
-
-const extractBodyFromHtml = (html?: string) => {
-  if (!html) return '';
-  try {
-    const doc = new DOMParser().parseFromString(html, 'text/html');
-    return doc.body.innerHTML;
-  } catch {
-    return html;
-  }
-};
-
-const TextEditor: React.FC<TextEditorProps> = ({ initialHtml, fullHtml }) => {
-  const bodyHtml = fullHtml ? extractBodyFromHtml(fullHtml) : initialHtml;
+function App() {
   const [align, setAlign] = useState("");
   const [boldActive, setBoldActive] = useState(false);
   const [italicActive, setItalicActive] = useState(false);
@@ -41,7 +24,6 @@ const TextEditor: React.FC<TextEditorProps> = ({ initialHtml, fullHtml }) => {
   const [unorderedListActive, setUnorderedListActive] = useState(false);
   const [linkDropdownOpen, setLinkDropdownOpen] = useState(false);
   const [linkUrl, setLinkUrl] = useState("");
-
 
   const handleSelectionChange = useCallback(() => {
     requestAnimationFrame(() => {
@@ -90,6 +72,7 @@ const TextEditor: React.FC<TextEditorProps> = ({ initialHtml, fullHtml }) => {
 
       if (editorRef.current) {
         const dirtyHTML = editorRef.current.innerHTML;
+        // console.log("dirty", dirtyHTML);
         const cleanHTML = sanitizeHTML(dirtyHTML);
         console.log(cleanHTML);
       }
@@ -247,9 +230,9 @@ const TextEditor: React.FC<TextEditorProps> = ({ initialHtml, fullHtml }) => {
           insertLink={insertLink}
         />
       </div>
-      <Editor ref={editorRef} initialHtml={bodyHtml} />
+      <Editor ref={editorRef} />
     </div>
   );
-};
+}
 
-export default TextEditor;
+export default App;
