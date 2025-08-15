@@ -1,5 +1,5 @@
-
 import { useRef, useState, useEffect, useCallback } from "react";
+import React from "react";
 import AlignLeftIcons from "../components/icons/AlignLeft.icon";
 import AlignCenterIcons from "../components/icons/AlignCenter.icon";
 import AlignRightIcons from "../components/icons/AlignRight.icon";
@@ -13,17 +13,41 @@ import ToolbarButton from "../components/ToolbarButton";
 import LinkDropdown from "../components/LinkDropdown";
 import Editor from "../components/Editor";
 
-function App() {
+
+interface TextEditorProps {
+  onChange?: (html: string) => void;
+  value?: string;
+  fullDocument?: string; // If provided, onChange will return the full HTML with body replaced
+}
+
+function TextEditor({ onChange, value, fullDocument }: TextEditorProps) {
   const [align, setAlign] = useState("");
   const [boldActive, setBoldActive] = useState(false);
   const [italicActive, setItalicActive] = useState(false);
   const [underlineActive, setUnderlineActive] = useState(false);
   const editorRef = useRef<HTMLDivElement>(null);
+
+  // Set initial HTML content on mount or when value/fullDocument changes
+  useEffect(() => {
+    if (editorRef.current) {
+      if (fullDocument) {
+        // Extract <body> content from fullDocument
+        const match = fullDocument.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
+        editorRef.current.innerHTML = match ? match[1] : "";
+      } else if (value) {
+        editorRef.current.innerHTML = value;
+      }
+    }
+  }, [value, fullDocument]);
+
+
   const [formatBlock, setFormatBlock] = useState("");
   const [orderedListActive, setOrderedListActive] = useState(false);
   const [unorderedListActive, setUnorderedListActive] = useState(false);
   const [linkDropdownOpen, setLinkDropdownOpen] = useState(false);
   const [linkUrl, setLinkUrl] = useState("");
+  const savedSelection = useRef<Range | null>(null);
+
 
   const handleSelectionChange = useCallback(() => {
     requestAnimationFrame(() => {
@@ -72,9 +96,23 @@ function App() {
 
       if (editorRef.current) {
         const dirtyHTML = editorRef.current.innerHTML;
-        // console.log("dirty", dirtyHTML);
-        const cleanHTML = sanitizeHTML(dirtyHTML);
-        console.log(cleanHTML);
+        if (onChange) {
+          if (fullDocument) {
+            // Replace <body> content in the full document
+            try {
+              const parser = new window.DOMParser();
+              const doc = parser.parseFromString(fullDocument, "text/html");
+              doc.body.innerHTML = dirtyHTML;
+              const updatedHTML = "<!DOCTYPE html>\n" + doc.documentElement.outerHTML;
+              onChange(updatedHTML);
+            } catch (e) {
+              // fallback to just body content
+              onChange(dirtyHTML);
+            }
+          } else {
+            onChange(dirtyHTML);
+          }
+        }
       }
     });
   }, [
@@ -85,11 +123,30 @@ function App() {
     unorderedListActive,
     formatBlock,
     align,
+    onChange
   ]);
+
+
+  const handleOpenLinkDropdown = (open: boolean) => {
+    setLinkDropdownOpen(open);
+    if (open) {
+      const selection = window.getSelection();
+      if (selection && selection.rangeCount > 0) {
+        savedSelection.current = selection.getRangeAt(0).cloneRange();
+      }
+    }
+  };
 
   const insertLink = () => {
     const url = linkUrl.trim();
     if (!url) return;
+
+    // Restore the saved selection before inserting the link
+    if (savedSelection.current) {
+      const selection = window.getSelection();
+      selection?.removeAllRanges();
+      selection?.addRange(savedSelection.current);
+    }
 
     const selection = window.getSelection();
     if (!selection || selection.isCollapsed) {
@@ -108,12 +165,15 @@ function App() {
         const a = anchors[i];
         if (a.getAttribute("href") === url) {
           a.setAttribute("style", "text-decoration: none;");
+          a.setAttribute("target", "_blank");
+          a.setAttribute("rel", "noopener noreferrer");
         }
       }
     }
 
     setLinkUrl("");
     setLinkDropdownOpen(false);
+    savedSelection.current = null;
   };
 
   useEffect(() => {
@@ -224,7 +284,7 @@ function App() {
         <ToolbarButton onClick={() => exec("redo")} label="Redo" />
         <LinkDropdown
           open={linkDropdownOpen}
-          setOpen={setLinkDropdownOpen}
+          setOpen={handleOpenLinkDropdown}
           linkUrl={linkUrl}
           setLinkUrl={setLinkUrl}
           insertLink={insertLink}
@@ -235,4 +295,4 @@ function App() {
   );
 }
 
-export default App;
+export default TextEditor;

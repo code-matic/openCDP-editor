@@ -1,11 +1,29 @@
 import "./App.css";
 import TextEditor from "./components/TextEditor";
+import { useEffect, useState } from "react";
 
 
 function App() {
+
+  const [initialHTML, setInitialHTML] = useState("");
+
+    useEffect(() => {
+    fetch("/new.html")
+      .then(res => res.text())
+      .then(setInitialHTML);
+  }, []);
+
+
+  const handleEditorChange = (html: string) => {
+    console.log("Editor output:", html);
+  };
+
+
   return (
-    <TextEditor />
-    // <TextEditor fullHtml={`<h1>Hello World</h1><p>This is pretext.</p>`} />
+    <TextEditor
+      // value={initialHTML}
+      fullDocument={initialHTML}
+      onChange={handleEditorChange} />
   );
 }
 
