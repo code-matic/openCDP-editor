@@ -5,24 +5,23 @@ import { useEffect, useState } from "react";
 
 function App() {
 
-  const [initialHTML, setInitialHTML] = useState("");
+  const [initialHTML, setInitialHTML] = useState("<div>Hello World</div>");
 
-    useEffect(() => {
-    fetch("/new.html")
-      .then(res => res.text())
-      .then(setInitialHTML);
-  }, []);
+  //   useEffect(() => {
+  //   fetch("/new.html")
+  //     .then(res => res.text())
+  //     .then(setInitialHTML);
+  // }, []);
 
-
-  const handleEditorChange = (html: string) => {
-    console.log("Editor output:", html);
+  const handleEditorChange = (value: string) => {
+    console.log("Editor output:", value);
   };
 
 
   return (
     <TextEditor
-      // value={initialHTML}
-      fullDocument={initialHTML}
+      bodyHTML={initialHTML}
+      // fullHTML={initialHTML}
       onChange={handleEditorChange} />
   );
 }

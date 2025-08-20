@@ -6,7 +6,6 @@ import AlignRightIcons from "../components/icons/AlignRight.icon";
 import Underline from "../components/icons/Underline.icon";
 import ItalicIcon from "../components/icons/Italics.icon";
 import BoldIcon from "../components/icons/Bold.icon";
-import { sanitizeHTML } from "../lib/./SantizeHtml";
 import UnorderedListIcon from "../components/icons/UnorderedList.icon";
 import OrderedListIcon from "../components/icons/OrderedList.icon";
 import ToolbarButton from "../components/ToolbarButton";
@@ -16,29 +15,29 @@ import Editor from "../components/Editor";
 
 interface TextEditorProps {
   onChange?: (html: string) => void;
-  value?: string;
-  fullDocument?: string; // If provided, onChange will return the full HTML with body replaced
+  bodyHTML?: string;
+  fullHTML?: string; // If provided, onChange will return the full HTML with body replaced
 }
 
-function TextEditor({ onChange, value, fullDocument }: TextEditorProps) {
+function TextEditor({ onChange, bodyHTML, fullHTML }: TextEditorProps) {
   const [align, setAlign] = useState("");
   const [boldActive, setBoldActive] = useState(false);
   const [italicActive, setItalicActive] = useState(false);
   const [underlineActive, setUnderlineActive] = useState(false);
   const editorRef = useRef<HTMLDivElement>(null);
 
-  // Set initial HTML content on mount or when value/fullDocument changes
+  // Set initial HTML content on mount or when bodyHTML/fullHTML changes
   useEffect(() => {
     if (editorRef.current) {
-      if (fullDocument) {
-        // Extract <body> content from fullDocument
-        const match = fullDocument.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
+      if (fullHTML) {
+        // Extract <body> content from fullHTML
+        const match = fullHTML.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
         editorRef.current.innerHTML = match ? match[1] : "";
-      } else if (value) {
-        editorRef.current.innerHTML = value;
+      } else if (bodyHTML) {
+        editorRef.current.innerHTML = bodyHTML;
       }
     }
-  }, [value, fullDocument]);
+  }, [bodyHTML, fullHTML]);
 
 
   const [formatBlock, setFormatBlock] = useState("");
@@ -97,11 +96,11 @@ function TextEditor({ onChange, value, fullDocument }: TextEditorProps) {
       if (editorRef.current) {
         const dirtyHTML = editorRef.current.innerHTML;
         if (onChange) {
-          if (fullDocument) {
+          if (fullHTML) {
             // Replace <body> content in the full document
             try {
               const parser = new window.DOMParser();
-              const doc = parser.parseFromString(fullDocument, "text/html");
+              const doc = parser.parseFromString(fullHTML, "text/html");
               doc.body.innerHTML = dirtyHTML;
               const updatedHTML = "<!DOCTYPE html>\n" + doc.documentElement.outerHTML;
               onChange(updatedHTML);
