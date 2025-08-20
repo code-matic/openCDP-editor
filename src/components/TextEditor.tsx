@@ -114,6 +114,7 @@ function TextEditor({ onChange, bodyHTML, fullHTML }: TextEditorProps) {
         }
       }
     });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     boldActive,
     italicActive,

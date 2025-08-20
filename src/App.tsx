@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import "./App.css";
 import TextEditor from "./components/TextEditor";
 import { useEffect, useState } from "react";
