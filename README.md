@@ -1,46 +1,111 @@
-# Getting Started with Create React App
+# @codematic.io/open-cdp-editor
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A customizable, React-based rich text editor component with sanitization and extensible toolbar, built with [Ant Design](https://ant.design/) and [DOMPurify](https://github.com/cure53/DOMPurify).
 
-## Available Scripts
+---
 
-In the project directory, you can run:
+## Features
 
-### `npm start`
+- **Rich Text Editing**: Bold, italics, underline, lists, alignment, and more.
+- **Image & Link Support**: Easily add images and links.
+- **Sanitization**: Uses DOMPurify to prevent XSS attacks.
+- **Customizable Toolbar**: Add or remove toolbar buttons as needed.
+- **TypeScript Support**: Fully typed for safe integration.
+- **Ant Design UI**: Clean, modern interface.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+---
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+## Installation
 
-### `npm test`
+```bash
+npm install @codematic.io/open-cdp-editor
+```
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+---
 
-### `npm run build`
+## Usage
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+```tsx
+import React from 'react';
+import { Editor } from '@codematic.io/open-cdp-editor';
+function MyEditorComponent() {
+  const handleChange = (html: string) => {
+    // handle updated HTML or full HTML here
+    console.log(html);
+  };
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+  return (
+    <Editor
+      bodyHTML="<p>Hello, world!</p>"
+      // Or use fullHTML="<html><head></head><body><p>Hello, world!</p></body></html>"
+      onChange={handleChange}
+    />
+  );
+}
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+export default MyEditorComponent;
+```
 
-### `npm run eject`
+---
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+## Props
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+| Prop        | Type                            | Description                                                                                                 |
+|-------------|---------------------------------|-------------------------------------------------------------------------------------------------------------|
+| `bodyHTML`  | `string`                        | The HTML content to display and edit inside the editor's body. Ignored if `fullHTML` is provided.           |
+| `fullHTML`  | `string`                        | The full HTML document to edit. If provided, the editor will extract and edit the `<body>` content, and `onChange` will return the updated full HTML document. |
+| `onChange`  | `(html: string) => void`        | Callback function that receives the updated HTML content. Returns full HTML if `fullHTML` is set, otherwise just the body HTML. |
+| ...         | ...                             | See source for more options.                                                                                |
+---
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+## Customization
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+- **Toolbar**: Modify `ToolbarButton` or add your own in `src/components/`.
+- **Icons**: SVG icons are in `src/components/icons/`.
+- **Sanitization**: See `lib/SantizeHtml.ts` for how HTML is cleaned.
 
-## Learn More
+---
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+## Development
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+```bash
+# Run locally
+npm start
+
+# Run tests
+npm test
+
+# Build for production
+npm run build
+```
+
+---
+
+## File Structure
+
+```
+src/
+  components/         # Editor, Toolbar, Buttons, Icons
+  HTML-component/     # Example HTML files
+  lib/                # HTML sanitization
+```
+
+---
+
+## License
+
+[MIT](LICENSE)
+
+---
+
+## Contributing
+
+Pull requests and issues are welcome! Please open an issue to discuss your idea.
+
+---
+
+## Acknowledgements
+
+- [React](https://reactjs.org/)
+- [Ant Design](https://ant.design/)
+- [DOMPurify](https://github.com/cure53/DOMPurify)
