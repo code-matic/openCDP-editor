@@ -1,5 +1,4 @@
 import { useRef, useState, useEffect, useCallback } from "react";
-import React from "react";
 import AlignLeftIcons from "../components/icons/AlignLeft.icon";
 import AlignCenterIcons from "../components/icons/AlignCenter.icon";
 import AlignRightIcons from "../components/icons/AlignRight.icon";
@@ -11,15 +10,17 @@ import OrderedListIcon from "../components/icons/OrderedList.icon";
 import ToolbarButton from "../components/ToolbarButton";
 import LinkDropdown from "../components/LinkDropdown";
 import Editor from "../components/Editor";
+import ImageUpload from "./imageUpload";
 
 
 interface TextEditorProps {
   onChange?: (html: string) => void;
+  className?: string;
   bodyHTML?: string;
-  fullHTML?: string; // If provided, onChange will return the full HTML with body replaced
+  fullHTML?: string;
 }
 
-function TextEditor({ onChange, bodyHTML, fullHTML }: TextEditorProps) {
+function TextEditor({ onChange, bodyHTML, fullHTML, className }: TextEditorProps) {
   const [align, setAlign] = useState("");
   const [boldActive, setBoldActive] = useState(false);
   const [italicActive, setItalicActive] = useState(false);
@@ -46,7 +47,6 @@ function TextEditor({ onChange, bodyHTML, fullHTML }: TextEditorProps) {
   const [linkDropdownOpen, setLinkDropdownOpen] = useState(false);
   const [linkUrl, setLinkUrl] = useState("");
   const savedSelection = useRef<Range | null>(null);
-
 
   const handleSelectionChange = useCallback(() => {
     requestAnimationFrame(() => {
@@ -114,7 +114,7 @@ function TextEditor({ onChange, bodyHTML, fullHTML }: TextEditorProps) {
         }
       }
     });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     boldActive,
     italicActive,
@@ -125,7 +125,6 @@ function TextEditor({ onChange, bodyHTML, fullHTML }: TextEditorProps) {
     align,
     onChange
   ]);
-
 
   const handleOpenLinkDropdown = (open: boolean) => {
     setLinkDropdownOpen(open);
@@ -223,7 +222,7 @@ function TextEditor({ onChange, bodyHTML, fullHTML }: TextEditorProps) {
   };
 
   return (
-    <div className="w-[500px] h-auto border-2 border-blue-500 p-3 rounded-lg shadow-lg mx-auto mt-10">
+    <div className="w-fit border-2 border-blue-500 p-3 rounded-lg shadow-lg mx-auto mt-10">
       <div className="flex flex-wrap mb-2 gap-1">
         <ToolbarButton
           active={boldActive}
@@ -280,8 +279,6 @@ function TextEditor({ onChange, bodyHTML, fullHTML }: TextEditorProps) {
           onClick={() => exec("justifyRight")}
           icon={<AlignRightIcons />}
         />
-        <ToolbarButton onClick={() => exec("undo")} label="Undo" />
-        <ToolbarButton onClick={() => exec("redo")} label="Redo" />
         <LinkDropdown
           open={linkDropdownOpen}
           setOpen={handleOpenLinkDropdown}
@@ -289,8 +286,9 @@ function TextEditor({ onChange, bodyHTML, fullHTML }: TextEditorProps) {
           setLinkUrl={setLinkUrl}
           insertLink={insertLink}
         />
+        <ImageUpload/>
       </div>
-      <Editor ref={editorRef} />
+      <Editor ref={editorRef} className={className} />
     </div>
   );
 }

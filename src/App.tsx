@@ -3,16 +3,15 @@ import "./App.css";
 import TextEditor from "./components/TextEditor";
 import { useEffect, useState } from "react";
 
-
 function App() {
 
-  const [initialHTML, setInitialHTML] = useState("<div>Hello World</div>");
+  const [initialHTML, setInitialHTML] = useState("");
 
-  //   useEffect(() => {
-  //   fetch("/new.html")
-  //     .then(res => res.text())
-  //     .then(setInitialHTML);
-  // }, []);
+  useEffect(() => {
+    fetch("/new.html")
+      .then(res => res.text())
+      .then(setInitialHTML);
+  }, []);
 
   const handleEditorChange = (value: string) => {
     console.log("Editor output:", value);
@@ -20,10 +19,14 @@ function App() {
 
 
   return (
-    <TextEditor
-      bodyHTML={initialHTML}
-      // fullHTML={initialHTML}
-      onChange={handleEditorChange} />
+    <div>
+      <TextEditor
+        bodyHTML={initialHTML}
+        // fullHTML={initialHTML}
+        className="!h-[300px]"
+        onChange={handleEditorChange} />
+    </div>
+
   );
 }
 
