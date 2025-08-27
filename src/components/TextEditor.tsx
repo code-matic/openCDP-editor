@@ -18,10 +18,10 @@ interface TextEditorProps {
   className?: string;
   bodyHTML?: string;
   fullHTML?: string;
-  children?: React.ReactNode;
+  imageChildren?: React.ReactNode;
 }
 
-function TextEditor({ onChange, bodyHTML, fullHTML, className, children }: TextEditorProps) {
+function TextEditor({ onChange, bodyHTML, fullHTML, className, imageChildren }: TextEditorProps) {
   const [align, setAlign] = useState("");
   const [boldActive, setBoldActive] = useState(false);
   const [italicActive, setItalicActive] = useState(false);
@@ -288,7 +288,7 @@ function TextEditor({ onChange, bodyHTML, fullHTML, className, children }: TextE
           insertLink={insertLink}
         />
         <ImageUpload
-          children={children}
+          children={imageChildren}
         />
       </div>
       <Editor ref={editorRef} className={className} />

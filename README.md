@@ -36,23 +36,20 @@ import { Editor } from '@codematic.io/open-cdp-editor';
 function MyEditorComponent() {
 
   const [showImageModal, setShowImageModal] = useState(false);
-  
+
   const handleChange = (html: string) => {
     // handle updated HTML or full HTML here
     console.log(html);
   };
 
 
-
   return (
-    <>
       <TextEditor
         bodyHTML={initialHTML}
         // fullHTML={initialHTML}
         className="!h-[300px]"
-        children={<div>Custom Modal Content</div>}
+        imageChildren={<div>Custom Modal Content</div>}
         onChange={handleEditorChange} />
-    </>
   );
 }
 

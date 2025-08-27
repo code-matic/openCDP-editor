@@ -19,14 +19,12 @@ function App() {
 
 
   return (
-    <div>
       <TextEditor
         bodyHTML={initialHTML}
         // fullHTML={initialHTML}
         className="!h-[300px]"
-        children={<div>Custom Modal Content</div>}
+        imageChildren={<div>Custom Modal Content</div>}
         onChange={handleEditorChange} />
-    </div>
 
   );
 }
