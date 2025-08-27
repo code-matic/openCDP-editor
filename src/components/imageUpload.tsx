@@ -3,32 +3,30 @@ import ImageUploadIcon from "../components/icons/imageUpload.icon";
 import ImageModal from "./ImageModal";
 import React, { useState } from "react";
 
-
 interface ImageUploadProps {
-  open?: boolean;
-  setOpen?: (open: boolean) => void;
-  linkUrl?: string;
-  setLinkUrl?: (url: string) => void;
-  insertLink?: () => void;
+    children?: React.ReactNode;
 }
 
 
-
-const ImageUpload: React.FC<ImageUploadProps> = () => {
+const ImageUpload: React.FC<ImageUploadProps> = ({ children }) => {
 
     const [openImageModal, setOpenImageModal] = useState(false);
 
-  return (
-    <div>
-      <Button icon={<ImageUploadIcon />} onClick={() => setOpenImageModal(true)} className="px-2 py-1 rounded bg-gray-100"/>
+    return (
+        <div>
+            <Button
+                icon={<ImageUploadIcon />}
+                onClick={() => setOpenImageModal(true)}
+                className="px-2 py-1 rounded bg-gray-100" />
+                {
+                    openImageModal && <ImageModal
+                        onClose={() => setOpenImageModal(false)}
+                        children={children} />
+                }
 
-      {
-        openImageModal && <ImageModal onClose={() => setOpenImageModal(false)}/>
-      }
+        </div>
 
-    </div>
-
-  );
+    );
 };
 
 export default ImageUpload;

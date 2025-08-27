@@ -286,7 +286,11 @@ function TextEditor({ onChange, bodyHTML, fullHTML, className }: TextEditorProps
           setLinkUrl={setLinkUrl}
           insertLink={insertLink}
         />
-        <ImageUpload/>
+        <ImageUpload>
+          <div>
+            
+          </div>
+        </ImageUpload>
       </div>
       <Editor ref={editorRef} className={className} />
     </div>
