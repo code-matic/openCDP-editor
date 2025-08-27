@@ -5,8 +5,7 @@ import React, { useState } from "react";
 
 interface ImageUploadProps {
     children?: React.ReactNode;
-}
-
+    }
 
 const ImageUpload: React.FC<ImageUploadProps> = ({ children }) => {
 
@@ -19,11 +18,11 @@ const ImageUpload: React.FC<ImageUploadProps> = ({ children }) => {
                 onClick={() => setOpenImageModal(true)}
                 className="px-2 py-1 rounded bg-gray-100" />
                 {
-                    openImageModal && <ImageModal
+                    openImageModal && 
+                    <ImageModal
                         onClose={() => setOpenImageModal(false)}
                         children={children} />
                 }
-
         </div>
 
     );
