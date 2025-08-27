@@ -37,7 +37,7 @@ function MyEditorComponent() {
 
   const [showImageModal, setShowImageModal] = useState(false);
 
-  const handleChange = (html: string) => {
+  const handleEditorChange = (html: string) => {
     // handle updated HTML or full HTML here
     console.log(html);
   };
