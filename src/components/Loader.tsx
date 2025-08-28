@@ -1,3 +1,5 @@
+import React from 'react';
+
 const Loader = () => {
     return (
         <div className={`w-full flex justify-center h-[calc(100vh-230px)] items-center flex-col`}>

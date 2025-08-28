@@ -1,3 +1,4 @@
+import React from 'react';
 import { Button } from "antd";
 import CancelIcon from "./icons/Cancel.icon";
 

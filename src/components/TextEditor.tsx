@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect, useCallback } from "react";
+import React, { useRef, useState, useEffect, useCallback } from "react";
 import AlignLeftIcons from "../components/icons/AlignLeft.icon";
 import AlignCenterIcons from "../components/icons/AlignCenter.icon";
 import AlignRightIcons from "../components/icons/AlignRight.icon";

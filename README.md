@@ -1,7 +1,6 @@
 
 # @codematic.io/open-cdp-editor
-
-A customizable, React-based rich text editor component with sanitization and extensible toolbar, built with [Ant Design](https://ant.design/) and [DOMPurify](https://github.com/cure53/DOMPurify). Includes a flexible modal system for image selection, designed for npm package consumers to fully control image sources and insertion logic.
+A React rich text editor component designed for openCDP, featuring a robust, extensible toolbar and seamless integration with Ant Design. It includes a sanitization layer using DOMPurify to ensure content security and a flexible modal system, allowing you to fully customize image selection and insertion logic
 
 ---
 

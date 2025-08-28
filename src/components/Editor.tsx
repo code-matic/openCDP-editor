@@ -1,4 +1,4 @@
-import { forwardRef, useEffect } from "react";
+import React, { forwardRef, useEffect } from "react";
 
 interface EditorProps {
   initialHtml?: string;
@@ -15,7 +15,7 @@ const Editor = forwardRef<HTMLDivElement, EditorProps>(({ initialHtml, className
   return (
     <div
       ref={ref}
-      className={`${className} h-[400px] box-border overflow-y-auto p-2 rounded-lg focus:outline-none scrollbar-thin scrollbar-thumb-gray-400`}
+      className={`${className} h-[400px] box-border border border-gray-300 overflow-y-auto p-2 rounded-lg focus:outline-none scrollbar-thin scrollbar-thumb-gray-400`}
       contentEditable
     ></div>
   );
