@@ -1,5 +1,6 @@
 const path = require('path');
 const TerserPlugin = require('terser-webpack-plugin');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 
 module.exports = {
   mode: 'production',
@@ -34,7 +35,7 @@ module.exports = {
       {
         test: /\.css$/,
         use: [
-          'style-loader',
+          MiniCssExtractPlugin.loader,
           'css-loader',
           {
             loader: 'postcss-loader',
@@ -75,4 +76,9 @@ module.exports = {
     minimize: true,
     minimizer: [new TerserPlugin()],
   },
+  plugins: [
+    new MiniCssExtractPlugin({
+      filename: 'index.css',
+    }),
+  ],
 };
