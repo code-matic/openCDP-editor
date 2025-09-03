@@ -2,23 +2,15 @@ const path = require('path');
 const TerserPlugin = require('terser-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 
-module.exports = {
-  mode: 'production',
-  entry: './src/lib.tsx', // Your library's entry point
-  output: {
-    path: path.resolve(__dirname, 'dist'),
-    filename: 'index.js',
-    library: {
-      name: '@codematic.io/open-cdp-editor',
-      type: 'module', // Use modern ES Module output
-    },
-    clean: true,
-  },
-  experiments: {
-    outputModule: true,
-  },
+const common = {
+  entry: './src/lib.tsx',
   resolve: {
     extensions: ['.ts', '.tsx', '.js', '.jsx'],
+  },
+  externals: {
+    react: 'react',
+    'react-dom': 'react-dom',
+    antd: 'antd',
   },
   module: {
     rules: [
@@ -45,10 +37,7 @@ module.exports = {
             loader: 'postcss-loader',
             options: {
               postcssOptions: {
-                plugins: [
-                  require('tailwindcss'),
-                  require('autoprefixer'),
-                ],
+                plugins: [require('tailwindcss'), require('autoprefixer')],
               },
             },
           },
@@ -60,19 +49,35 @@ module.exports = {
       },
     ],
   },
-  // Exclude peer dependencies from the bundle
-  externals: {
-    react: 'react',
-    'react-dom': 'react-dom',
-    'antd': 'antd'
-  },
   optimization: {
     minimize: true,
     minimizer: [new TerserPlugin()],
   },
-  plugins: [
-    new MiniCssExtractPlugin({
-      filename: 'index.css',
-    }),
-  ],
 };
+
+module.exports = [
+  // ESM build
+  {
+    ...common,
+    mode: 'production',
+    output: {
+      path: path.resolve(__dirname, 'dist'),
+      filename: 'index.js',
+      library: { type: 'module' },
+      clean: true,
+    },
+    experiments: { outputModule: true },
+    plugins: [new MiniCssExtractPlugin({ filename: 'index.css' })],
+  },
+  // CJS build
+  {
+    ...common,
+    mode: 'production',
+    output: {
+      path: path.resolve(__dirname, 'dist'),
+      filename: 'index.cjs',
+      library: { type: 'commonjs2' },
+    },
+    plugins: [new MiniCssExtractPlugin({ filename: 'index.css' })],
+  },
+];
