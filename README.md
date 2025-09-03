@@ -35,8 +35,6 @@ import '@codematic.io/open-cdp-editor/dist/index.css';
 
 function MyEditorComponent() {
 
-  const [showImageModal, setShowImageModal] = useState(false);
-
   const handleEditorChange = (html: string) => {
     // handle updated HTML or full HTML here
     console.log(html);
@@ -69,43 +67,9 @@ export default MyEditorComponent;
 | `imageChildren`  | `React.ReactNode`               | Custom content to render inside the editor, such as a modal for image selection. Use this to provide your own image grid/modal and handle image selection and insertion logic. |
 | ...         | ...                             | options.                                                                                |
 
+---
+
 **Note:** The editor does not fetch images or handle image selection logic itself. You must provide your own modal and image grid as children, and handle image insertion in your own code. This makes the editor fully customizable and reusable for any content.
-
-
-## Customization
-
-- **Toolbar**: Modify `ToolbarButton` or add your own in `src/components/`.
-- **Icons**: SVG icons are in `src/components/icons/`.
-- **Sanitization**: See `lib/SantizeHtml.ts` for how HTML is cleaned.
-- **Image Modal**: Pass any content as `imageChildren` (such as a grid of images, file upload, etc). Handle image selection and insertion logic in your own code for maximum flexibility.
-
----
-
-
-## Development
-
-```bash
-# Run locally
-npm start
-
-# Run tests
-npm test
-
-# Build for production
-npm run build
-```
-
----
-
-
-## File Structure
-
-```
-src/
-  components/         # Editor, Toolbar, Buttons, Icons, ImageModal
-  HTML-component/     # Example HTML files
-  lib/                # HTML sanitization
-```
 
 ---
 
