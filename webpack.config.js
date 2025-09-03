@@ -8,7 +8,11 @@ module.exports = {
   output: {
     path: path.resolve(__dirname, 'dist'),
     filename: 'index.js',
-    library: 'open-cdp-editor',
+    library: {
+      name: 'open-cdp-editor',
+      type: 'umd',
+      export: 'default' // This is the crucial line to add
+    },
     libraryTarget: 'umd',
     globalObject: 'this',
     umdNamedDefine: true
