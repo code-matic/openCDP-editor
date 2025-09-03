@@ -1,0 +1,1 @@
+{"version":3,"file":"Editor.d.ts","sourceRoot":"","sources":["../../src/components/Editor.tsx"],"names":[],"mappings":"AAAA,OAAO,KAAgC,MAAM,OAAO,CAAC;AAErD,UAAU,WAAW;IACnB,WAAW,CAAC,EAAE,MAAM,CAAC;IACrB,SAAS,CAAC,EAAE,MAAM,CAAC;CACpB;AAED,QAAA,MAAM,MAAM,oFAcV,CAAC;AAEH,eAAe,MAAM,CAAC"}

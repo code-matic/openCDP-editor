@@ -1,0 +1,1 @@
+{"version":3,"file":"ImageModal.d.ts","sourceRoot":"","sources":["../../src/components/ImageModal.tsx"],"names":[],"mappings":"AAAA,OAAO,KAAK,MAAM,OAAO,CAAC;AAI1B,UAAU,eAAe;IACvB,OAAO,CAAC,EAAE,MAAM,IAAI,CAAC;IACrB,QAAQ,CAAC,EAAE,KAAK,CAAC,SAAS,CAAC;CAC5B;AAED,QAAA,MAAM,UAAU,0BAAyB,eAAe,4CAYvD,CAAC;AAEF,eAAe,UAAU,CAAC"}
