@@ -1,9 +1,11 @@
 {
   "name": "@codematic.io/open-cdp-editor",
-  "version": "1.2.3",
+  "version": "1.2.6",
   "description": "A customizable React rich text editor component built with TailwindCSS and Ant Design, designed for seamless integration into openCDP and modern React applications.",
   "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "type": "module",
+  "module": "dist/index.esm.js",
+  "types": "dist/lib.d.ts",
   "homepage": "https://github.com/code-matic/openCDP-editor",
   "keywords": [
     "React",

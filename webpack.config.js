@@ -9,10 +9,13 @@ module.exports = {
     path: path.resolve(__dirname, 'dist'),
     filename: 'index.js',
     library: {
-      name: 'open-cdp-editor',
-      type: 'umd',
-      export: 'default' // This is the crucial line to add
+      name: '@codematic.io/open-cdp-editor',
+      type: 'module', // Use modern ES Module output
     },
+    clean: true,
+  },
+  experiments: {
+    outputModule: true,
   },
   resolve: {
     extensions: ['.ts', '.tsx', '.js', '.jsx'],
@@ -59,18 +62,8 @@ module.exports = {
   },
   // Exclude peer dependencies from the bundle
   externals: {
-    react: {
-      commonjs: 'react',
-      commonjs2: 'react',
-      amd: 'react',
-      root: 'React',
-    },
-    'react-dom': {
-      commonjs: 'react-dom',
-      commonjs2: 'react-dom',
-      amd: 'react-dom',
-      root: 'ReactDOM',
-    },
+    react: 'react',
+    'react-dom': 'react-dom',
     'antd': 'antd'
   },
   optimization: {
