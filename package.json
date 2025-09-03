@@ -1,6 +1,6 @@
 {
   "name": "@codematic.io/open-cdp-editor",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "A customizable React rich text editor component built with TailwindCSS and Ant Design, designed for seamless integration into openCDP and modern React applications.",
   "main": "dist/index.js",
   "homepage": "https://github.com/code-matic/openCDP-editor",
@@ -28,28 +28,16 @@
   ],
   "author": "codematic.io",
   "dependencies": {
-    "@testing-library/dom": "^10.4.1",
-    "@testing-library/jest-dom": "^6.6.4",
-    "@testing-library/react": "^16.3.0",
-    "@testing-library/user-event": "^13.5.0",
-    "@types/jest": "^27.5.2",
-    "@types/node": "^16.18.126",
-    "@types/react": "^19.1.9",
-    "@types/react-dom": "^19.1.7",
     "antd": "^5.0.0",
     "dompurify": "^3.2.6",
     "react": "^17.0.0 || ^18.0.0 || ^19.0.0",
-    "react-dom": "^17.0.0 || ^18.0.0 || ^19.0.0",
-    "react-scripts": "5.0.1",
-    "typescript": "^4.9.5",
-    "web-vitals": "^2.1.4"
+    "react-dom": "^17.0.0 || ^18.0.0 || ^19.0.0"
   },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
     "webpack-build": "webpack --mode production",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "test": "react-scripts test"
   },
   "peerDependencies": {
     "antd": "^5.0.0",
@@ -75,6 +63,16 @@
     ]
   },
   "devDependencies": {
+    "@testing-library/dom": "^10.4.1",
+    "@testing-library/jest-dom": "^6.6.4",
+    "@testing-library/react": "^16.3.0",
+    "@testing-library/user-event": "^13.5.0",
+    "@types/jest": "^27.5.2",
+    "@types/node": "^16.18.126",
+    "@types/react": "^19.1.9",
+    "@types/react-dom": "^19.1.7",
+    "react-scripts": "5.0.1",
+    "typescript": "^4.9.5",
     "@babel/core": "^7.28.3",
     "@babel/preset-env": "^7.28.3",
     "@babel/preset-react": "^7.27.1",
