@@ -13,9 +13,6 @@ module.exports = {
       type: 'umd',
       export: 'default' // This is the crucial line to add
     },
-    libraryTarget: 'umd',
-    globalObject: 'this',
-    umdNamedDefine: true
   },
   resolve: {
     extensions: ['.ts', '.tsx', '.js', '.jsx'],
