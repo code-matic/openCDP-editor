@@ -30,7 +30,7 @@ npm install @codematic.io/open-cdp-editor
 
 ```tsx
 import React, { useState } from 'react';
-import { TextEditor } from '@codematic.io/open-cdp-editor';
+import TextEditor from '@codematic.io/open-cdp-editor';
 import '@codematic.io/open-cdp-editor/dist/index.css';
 
 function MyEditorComponent() {
