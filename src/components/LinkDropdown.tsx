@@ -22,7 +22,7 @@ const LinkDropdown: React.FC<LinkDropdownProps> = ({
       open={open}
       onOpenChange={setOpen}
       trigger={["click"]}
-      popupRender={() => (
+      overlay={() => (
         <div className="p-2 bg-white border rounded shadow-md w-64">
           <Input
             placeholder="https://example.com"
@@ -31,7 +31,7 @@ const LinkDropdown: React.FC<LinkDropdownProps> = ({
             onPressEnter={insertLink}
           />
           <div className="flex justify-end mt-2">
-            <Button size="small" type="primary" onClick={insertLink}>
+            <Button size="small" type="primary" onClick={insertLink} title="Insert Link">
               Insert
             </Button>
           </div>

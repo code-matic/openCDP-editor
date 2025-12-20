@@ -1,4 +1,5 @@
 import React, { useRef, useState, useEffect, useCallback } from "react";
+import InsertButtonModal from "./InsertButtonModal";
 import AlignLeftIcons from "../components/icons/AlignLeft.icon";
 import AlignCenterIcons from "../components/icons/AlignCenter.icon";
 import AlignRightIcons from "../components/icons/AlignRight.icon";
@@ -7,6 +8,7 @@ import ItalicIcon from "../components/icons/Italics.icon";
 import BoldIcon from "../components/icons/Bold.icon";
 import UnorderedListIcon from "../components/icons/UnorderedList.icon";
 import OrderedListIcon from "../components/icons/OrderedList.icon";
+import ButtonIcon from "../components/icons/Button.icon";
 import ToolbarButton from "../components/ToolbarButton";
 import LinkDropdown from "../components/LinkDropdown";
 import Editor from "../components/Editor";
@@ -16,30 +18,30 @@ import ImageUpload from "./imageUpload";
 interface TextEditorProps {
   onChange?: (html: string) => void;
   className?: string;
-  bodyHTML?: string;
-  fullHTML?: string;
+  bodyContent?: string;
+  documentHtml?: string;
   imageChildren?: React.ReactNode;
 }
 
-function TextEditor({ onChange, bodyHTML, fullHTML, className, imageChildren }: TextEditorProps) {
+function TextEditor({ onChange, bodyContent, documentHtml, className, imageChildren }: TextEditorProps) {
   const [align, setAlign] = useState("");
   const [boldActive, setBoldActive] = useState(false);
   const [italicActive, setItalicActive] = useState(false);
   const [underlineActive, setUnderlineActive] = useState(false);
   const editorRef = useRef<HTMLDivElement>(null);
 
-  // Set initial HTML content on mount or when bodyHTML/fullHTML changes
+  // Set initial HTML content on mount or when bodyContent/documentHtml changes
   useEffect(() => {
     if (editorRef.current) {
-      if (fullHTML) {
-        // Extract <body> content from fullHTML
-        const match = fullHTML.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
+      if (documentHtml) {
+        // Extract <body> content from documentHtml
+        const match = documentHtml.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
         editorRef.current.innerHTML = match ? match[1] : "";
-      } else if (bodyHTML) {
-        editorRef.current.innerHTML = bodyHTML;
+      } else if (bodyContent) {
+        editorRef.current.innerHTML = bodyContent;
       }
     }
-  }, [bodyHTML, fullHTML]);
+  }, [bodyContent, documentHtml]);
 
 
   const [formatBlock, setFormatBlock] = useState("");
@@ -97,11 +99,11 @@ function TextEditor({ onChange, bodyHTML, fullHTML, className, imageChildren }: 
       if (editorRef.current) {
         const dirtyHTML = editorRef.current.innerHTML;
         if (onChange) {
-          if (fullHTML) {
+          if (documentHtml) {
             // Replace <body> content in the full document
             try {
               const parser = new window.DOMParser();
-              const doc = parser.parseFromString(fullHTML, "text/html");
+              const doc = parser.parseFromString(documentHtml, "text/html");
               doc.body.innerHTML = dirtyHTML;
               const updatedHTML = "<!DOCTYPE html>\n" + doc.documentElement.outerHTML;
               onChange(updatedHTML);
@@ -176,6 +178,58 @@ function TextEditor({ onChange, bodyHTML, fullHTML, className, imageChildren }: 
     savedSelection.current = null;
   };
 
+  // State for modal and input fields
+  const [buttonModalOpen, setButtonModalOpen] = useState(false);
+  const [buttonLabel, setButtonLabel] = useState("");
+  const [buttonUrl, setButtonUrl] = useState("");
+  const [buttonLabelError, setButtonLabelError] = useState("");
+  const [buttonUrlError, setButtonUrlError] = useState("");
+
+  // Show modal and save selection
+  const insertButton = () => {
+    const selection = window.getSelection();
+    if (selection && selection.rangeCount > 0) {
+      savedSelection.current = selection.getRangeAt(0).cloneRange();
+    }
+    setButtonModalOpen(true);
+    setButtonLabel("");
+    setButtonUrl("");
+    setButtonLabelError("");
+    setButtonUrlError("");
+  };
+
+  // Insert button with anchor, restoring selection
+  const handleInsertButton = () => {
+    let hasError = false;
+    if (!buttonLabel.trim()) {
+      setButtonLabelError("Button label is required");
+      hasError = true;
+    } else {
+      setButtonLabelError("");
+    }
+    if (!buttonUrl.trim()) {
+      setButtonUrlError("URL is required");
+      hasError = true;
+    } else {
+      setButtonUrlError("");
+    }
+    if (hasError) return;
+    if (editorRef.current) {
+      // Restore selection before inserting
+      const selection = window.getSelection();
+      selection?.removeAllRanges();
+      if (savedSelection.current) {
+        selection?.addRange(savedSelection.current);
+      }
+      const html = `<a href="${buttonUrl}" target="_blank" rel="noopener noreferrer">${buttonLabel}</a>`;
+      document.execCommand("insertHTML", false, html);
+      editorRef.current.focus();
+      handleSelectionChange();
+    }
+    setButtonModalOpen(false);
+    savedSelection.current = null;
+  };
+
   useEffect(() => {
     const editor = editorRef.current;
     if (!editor) return;
@@ -190,6 +244,7 @@ function TextEditor({ onChange, bodyHTML, fullHTML, className, imageChildren }: 
   }, [handleSelectionChange]);
 
   const exec = (command: string, value?: string) => {
+
     const selection = window.getSelection();
     const isCollapsed = selection && selection.isCollapsed;
     const isFormatCmd =
@@ -225,59 +280,71 @@ function TextEditor({ onChange, bodyHTML, fullHTML, className, imageChildren }: 
   return (
     <div className="w-fit border-2 border-blue-500 p-3 rounded-lg shadow-lg mx-auto mt-10">
       <div className="flex flex-wrap mb-2 gap-1">
+        
         <ToolbarButton
           active={boldActive}
           onClick={() => exec("bold")}
+          tooltip="Bold"
           icon={<BoldIcon />}
         />
         <ToolbarButton
           active={italicActive}
           onClick={() => exec("italic")}
+          tooltip="Italic"
           icon={<ItalicIcon />}
         />
         <ToolbarButton
           active={underlineActive}
           onClick={() => exec("underline")}
+          tooltip="Underline"
           icon={<Underline />}
         />
         <ToolbarButton
           active={formatBlock === "h1"}
           onClick={() => exec("formatBlock", "H1")}
+          tooltip="Heading 1"
           label="H1"
         />
         <ToolbarButton
           active={formatBlock === "h2"}
           onClick={() => exec("formatBlock", "H2")}
+          tooltip="Heading 2"
           label="H2"
         />
         <ToolbarButton
           active={formatBlock === "h3"}
           onClick={() => exec("formatBlock", "H3")}
+          tooltip="Heading 3"
           label="H3"
         />
         <ToolbarButton
           active={unorderedListActive}
           onClick={() => exec("insertUnorderedList")}
+          tooltip="Unordered List"
           icon={<UnorderedListIcon />}
         />
         <ToolbarButton
           active={orderedListActive}
           onClick={() => exec("insertOrderedList")}
+          tooltip="Ordered List"
           icon={<OrderedListIcon />}
         />
         <ToolbarButton
           active={align === "left"}
           onClick={() => exec("justifyLeft")}
+          tooltip="Align Left"
           icon={<AlignLeftIcons />}
         />
         <ToolbarButton
           active={align === "center"}
           onClick={() => exec("justifyCenter")}
+          tooltip="Align Center"
           icon={<AlignCenterIcons />}
         />
         <ToolbarButton
           active={align === "right"}
           onClick={() => exec("justifyRight")}
+          tooltip="Align Right"
           icon={<AlignRightIcons />}
         />
         <LinkDropdown
@@ -289,6 +356,23 @@ function TextEditor({ onChange, bodyHTML, fullHTML, className, imageChildren }: 
         />
         <ImageUpload
           children={imageChildren}
+        />
+        <ToolbarButton
+          onClick={insertButton}
+          icon={<ButtonIcon />}
+          tooltip="Insert Button"
+          label="Button"
+        />
+        <InsertButtonModal
+          open={buttonModalOpen}
+          buttonLabel={buttonLabel}
+          buttonUrl={buttonUrl}
+          buttonLabelError={buttonLabelError}
+          buttonUrlError={buttonUrlError}
+          onLabelChange={setButtonLabel}
+          onUrlChange={setButtonUrl}
+          onOk={handleInsertButton}
+          onCancel={() => setButtonModalOpen(false)}
         />
       </div>
       <Editor ref={editorRef} className={className} />
