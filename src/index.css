@@ -49,6 +49,10 @@ code {
   @apply text-blue-600 underline hover:text-blue-800;
 }
 
+a{
+  text-decoration: none I !important;
+}
+
 
 .loader {
   width: 50px;

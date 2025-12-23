@@ -46,8 +46,8 @@ const InsertButtonModal: React.FC<InsertButtonModalProps> = ({
       <Form.Item
         label="Button URL"
         validateStatus={buttonUrlError ? "error" : ""}
-        help={buttonUrlError}
-      >
+        help={buttonUrlError}>
+
         <Input
           value={buttonUrl}
           onChange={e => onUrlChange(e.target.value)}

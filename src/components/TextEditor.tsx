@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect, useCallback } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import InsertButtonModal from "./InsertButtonModal";
 import AlignLeftIcons from "../components/icons/AlignLeft.icon";
 import AlignCenterIcons from "../components/icons/AlignCenter.icon";
@@ -13,7 +13,18 @@ import ToolbarButton from "../components/ToolbarButton";
 import LinkDropdown from "../components/LinkDropdown";
 import Editor from "../components/Editor";
 import ImageUpload from "./imageUpload";
-import { Dropdown } from "antd";
+import { Dropdown, message } from "antd";
+import { useTextEditorFunctions } from "./TextEditorFunctions";
+import CustomBgModal from "./CustomBgModal";
+import {
+  removeBackground as removeButtonBackground,
+  removeBorder as removeButtonBorder,
+  removePadding as removeButtonPadding,
+  handleBackgroundColorChange as updateButtonStyle,
+  handleTextColorChange as updateButtonTextColor,
+  handleBorderRadiusChange as updateButtonBorderRadius,
+  handlePaddingChange as updateButtonPadding,
+} from "./TextEditorFunctions";
 
 interface TextEditorProps {
   onChange?: (html: string) => void;
@@ -24,10 +35,23 @@ interface TextEditorProps {
 }
 
 function TextEditor({ onChange, bodyContent, documentHtml, className, imageChildren }: TextEditorProps) {
-  const [align, setAlign] = useState("");
-  const [boldActive, setBoldActive] = useState(false);
-  const [italicActive, setItalicActive] = useState(false);
-  const [underlineActive, setUnderlineActive] = useState(false);
+
+  const {
+    align,
+    boldActive,
+    italicActive,
+    underlineActive,
+    formatBlock,
+    orderedListActive,
+    unorderedListActive,
+    linkDropdownOpen,
+    linkUrl,
+    savedSelection,
+    handleSelectionChange,
+    setLinkDropdownOpen,
+    setLinkUrl,
+  } = useTextEditorFunctions();
+
   const [selectedButton, setSelectedButton] = useState<{
     element: HTMLAnchorElement;
     x: number;
@@ -48,146 +72,19 @@ function TextEditor({ onChange, bodyContent, documentHtml, className, imageChild
     }
   }, [bodyContent, documentHtml]);
 
-  const [formatBlock, setFormatBlock] = useState("");
-  const [orderedListActive, setOrderedListActive] = useState(false);
-  const [unorderedListActive, setUnorderedListActive] = useState(false);
-  const [linkDropdownOpen, setLinkDropdownOpen] = useState(false);
-  const [linkUrl, setLinkUrl] = useState("");
-  const savedSelection = useRef<Range | null>(null);
-
-  const handleSelectionChange = useCallback(() => {
-    requestAnimationFrame(() => {
-      const newBold = document.queryCommandState("bold");
-      const newItalic = document.queryCommandState("italic");
-      const newUnderline = document.queryCommandState("underline");
-      const newOrderedList = document.queryCommandState("insertOrderedList");
-      const newUnorderedList = document.queryCommandState(
-        "insertUnorderedList"
-      );
-      const newFormatBlock = document
-        .queryCommandValue("formatBlock")
-        ?.toLowerCase();
-
-      if (newBold !== boldActive) setBoldActive(newBold);
-      if (newItalic !== italicActive) setItalicActive(newItalic);
-      if (newUnderline !== underlineActive) setUnderlineActive(newUnderline);
-      if (newOrderedList !== orderedListActive)
-        setOrderedListActive(newOrderedList);
-      if (newUnorderedList !== unorderedListActive)
-        setUnorderedListActive(newUnorderedList);
-      if (newFormatBlock !== formatBlock) setFormatBlock(newFormatBlock);
-
-      const selection = window.getSelection();
-      if (!selection || selection.rangeCount === 0) return;
-
-      let node = selection.anchorNode as HTMLElement | null;
-
-      while (node && node !== editorRef.current) {
-        if (node.nodeType === 1) {
-          const display = window.getComputedStyle(node).display;
-          if (display === "block" || display === "flex") break;
-        }
-        node = node.parentElement;
-      }
-
-      let newAlign = "";
-      if (node && editorRef.current?.contains(node)) {
-        const align = window.getComputedStyle(node).textAlign;
-        if (align === "center") newAlign = "center";
-        else if (align === "right") newAlign = "right";
-        else newAlign = "left";
-      }
-
-      if (newAlign !== align) setAlign(newAlign);
-
-      if (editorRef.current) {
-        const dirtyHTML = editorRef.current.innerHTML;
-        if (onChange) {
-          if (documentHtml) {
-            // Replace <body> content in the full document
-            try {
-              const parser = new window.DOMParser();
-              const doc = parser.parseFromString(documentHtml, "text/html");
-              doc.body.innerHTML = dirtyHTML;
-              const updatedHTML = "<!DOCTYPE html>\n" + doc.documentElement.outerHTML;
-              onChange(updatedHTML);
-            } catch (e) {
-              // fallback to just body content
-              onChange(dirtyHTML);
-            }
-          } else {
-            onChange(dirtyHTML);
-          }
-        }
-      }
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    boldActive,
-    italicActive,
-    underlineActive,
-    orderedListActive,
-    unorderedListActive,
-    formatBlock,
-    align,
-    onChange
-  ]);
-
-  const handleOpenLinkDropdown = (open: boolean) => {
-    setLinkDropdownOpen(open);
-    if (open) {
-      const selection = window.getSelection();
-      if (selection && selection.rangeCount > 0) {
-        savedSelection.current = selection.getRangeAt(0).cloneRange();
-      }
-    }
-  };
-
-  const insertLink = () => {
-    const url = linkUrl.trim();
-    if (!url) return;
-
-    // Restore the saved selection before inserting the link
-    if (savedSelection.current) {
-      const selection = window.getSelection();
-      selection?.removeAllRanges();
-      selection?.addRange(savedSelection.current);
-    }
-
-    const selection = window.getSelection();
-    if (!selection || selection.isCollapsed) {
-      alert("Please select text to turn into a link.");
-      return;
-    }
-
-    // Insert the link
-    document.execCommand("createLink", false, url);
-
-    // Post-process: add inline style to the newly created <a>
-    const editor = editorRef.current;
-    if (editor) {
-      const anchors = editor.getElementsByTagName("a");
-      for (let i = 0; i < anchors.length; i++) {
-        const a = anchors[i];
-        if (a.getAttribute("href") === url) {
-          a.setAttribute("style", "text-decoration: none;");
-          a.setAttribute("target", "_blank");
-          a.setAttribute("rel", "noopener noreferrer");
-        }
-      }
-    }
-
-    setLinkUrl("");
-    setLinkDropdownOpen(false);
-    savedSelection.current = null;
-  };
-
   // State for modal and input fields
   const [buttonModalOpen, setButtonModalOpen] = useState(false);
   const [buttonLabel, setButtonLabel] = useState("");
   const [buttonUrl, setButtonUrl] = useState("");
   const [buttonLabelError, setButtonLabelError] = useState("");
   const [buttonUrlError, setButtonUrlError] = useState("");
+  const [buttonMenuPos, setButtonMenuPos] = useState({ top: 0, left: 0 });
+
+  // Add Ant Design modal for editing button title and URL
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [editButtonTitle, setEditButtonTitle] = useState("");
+  const [editButtonUrl, setEditButtonUrl] = useState("");
+  const [editButtonElement, setEditButtonElement] = useState<HTMLAnchorElement | null>(null);
 
   // Show modal and save selection
   const insertButton = () => {
@@ -219,19 +116,29 @@ function TextEditor({ onChange, bodyContent, documentHtml, className, imageChild
     }
     if (hasError) return;
     if (editorRef.current) {
-      // Restore selection before inserting
       const selection = window.getSelection();
       selection?.removeAllRanges();
       if (savedSelection.current) {
         selection?.addRange(savedSelection.current);
       }
-      const html = `<a href="${buttonUrl}" target="_blank" rel="noopener noreferrer">${buttonLabel}</a>`;
+      const html = `<a href="${buttonUrl}" target="_blank" rel="noopener noreferrer" style="text-decoration: none !important;">${buttonLabel}</a>`;
       document.execCommand("insertHTML", false, html);
       editorRef.current.focus();
       handleSelectionChange();
     }
     setButtonModalOpen(false);
     savedSelection.current = null;
+  };
+
+  // Handle editing of button title and URL
+  const handleEditButton = () => {
+    if (editButtonElement) {
+      editButtonElement.textContent = editButtonTitle;
+      editButtonElement.setAttribute("href", editButtonUrl);
+      message.success("Button updated successfully.");
+      setEditModalOpen(false);
+      setEditButtonElement(null);
+    }
   };
 
   useEffect(() => {
@@ -313,30 +220,60 @@ function TextEditor({ onChange, bodyContent, documentHtml, className, imageChild
     return () => document.removeEventListener("click", handleClick);
   }, []);
 
-  const [buttonMenuPos, setButtonMenuPos] = useState({ top: 0, left: 0 });
+
 
   const buttonMenuConfig = {
     onClick: (info: any) => {
       if (!selectedButton?.element) return;
-
       const btn = selectedButton.element;
-
       if (info.key === "edit") {
-        // Logic to edit the button
-        alert(`Edit button: ${btn.textContent}`);
+        const editor = editorRef.current;
+        if (editor) {
+          setEditButtonTitle(btn.textContent || "");
+          setEditButtonUrl(btn.getAttribute("href") || "");
+          setEditButtonElement(btn);
+          setEditModalOpen(true);
+        }
       } else if (info.key === "delete") {
-        // Logic to delete the button
         btn.remove();
         setSelectedButton(null);
       } else if (info.key.startsWith("align-")) {
         const alignment = info.key.replace("align-", "") as "left" | "center" | "right";
         btn.style.textAlign = alignment;
+        const parentBlock = btn.closest("div, p, section, article") as HTMLElement | null;
+        if (parentBlock) {
+          parentBlock.style.textAlign = alignment;
+        }
+      } else {
+        // Ensure `button` is defined in the context
+        const button = selectedButton?.element;
+        if (!button) {
+          console.error("Button element is not defined.");
+          return;
+        }
+
+        // Replace the missing function calls with the imported ones
+        if (info.key.startsWith("bg-")) {
+          updateButtonStyle(button, info.key.replace("bg-", ""));
+        } else if (info.key.startsWith("text-")) {
+          updateButtonTextColor(button, info.key.replace("text-", ""));
+        } else if (info.key.startsWith("radius-")) {
+          updateButtonBorderRadius(button, info.key.replace("radius-", ""));
+        } else if (info.key.startsWith("padding-")) {
+          updateButtonPadding(button, info.key.replace("padding-", ""));
+        } else if (info.key === "remove-bg") {
+          removeButtonBackground(button);
+        } else if (info.key === "remove-border") {
+          removeButtonBorder(button);
+        } else if (info.key === "remove-padding") {
+          removeButtonPadding(button);
+        } else if (info.key === "custom-bg-color") {
+          console.log("Custom background color button clicked");
+        }
       }
     },
     items: [
       { key: "edit", label: "Edit Button" },
-      { key: "delete", label: "Delete Button", danger: true },
-      { type: "divider" as const },
       {
         key: "align",
         label: "Align Button",
@@ -346,6 +283,59 @@ function TextEditor({ onChange, bodyContent, documentHtml, className, imageChild
           { key: "align-right", label: "Right" },
         ],
       },
+      {
+        key: "bg-color",
+        label: "Background Color",
+        children: [
+          { key: "bg-#3b82f6", label: "Blue" },
+          { key: "bg-#10b981", label: "Green" },
+          { key: "bg-#ef4444", label: "Red" },
+          { key: "bg-#f59e0b", label: "Orange" },
+          { key: "bg-#8b5cf6", label: "Purple" },
+          { key: "bg-#000000", label: "Black" },
+          {
+            key: "custom-bg-color",
+            label: "Custom",
+            onClick: () => {
+              setCustomBgModalVisible(true);
+            },
+          },
+        ],
+      },
+      {
+        key: "border-radius",
+        label: "Border Radius",
+        children: [
+          { key: "radius-0px", label: "Square" },
+          { key: "radius-2px", label: "Default" },
+          { key: "radius-4px", label: "Large" },
+          { key: "radius-9999px", label: "Pill" },
+        ],
+      },
+      {
+        key: "text-color",
+        label: "Text Color",
+        children: [
+          { key: "text-#ffffff", label: "White" },
+          { key: "text-#000000", label: "Black" },
+        ],
+      },
+      {
+        key: "padding",
+        label: "Padding",
+        children: [
+          { key: "padding-8px 16px", label: "Small" },
+          { key: "padding-12px 24px", label: "Default" },
+          { key: "padding-16px 32px", label: "Large" },
+          { key: "padding-20px 40px", label: "Extra Large" },
+        ],
+      },
+      { type: "divider" as const },
+      { key: "remove-bg", label: "Remove Background" },
+      { key: "remove-border", label: "Remove Border" },
+      { key: "remove-padding", label: "Remove Padding" },
+      { key: "delete", label: "Delete Button", danger: true },
+
     ],
   };
 
@@ -357,6 +347,64 @@ function TextEditor({ onChange, bodyContent, documentHtml, className, imageChild
       });
     }
   }, [selectedButton]);
+
+  // Correctly use state setters for linkDropdownOpen and linkUrl
+  const handleOpenLinkDropdown = (open: boolean) => {
+    setLinkDropdownOpen(open);
+    if (open) {
+      const selection = window.getSelection();
+      if (selection && selection.rangeCount > 0) {
+        savedSelection.current = selection.getRangeAt(0).cloneRange();
+      }
+    }
+  };
+
+  const insertLink = () => {
+    const url = linkUrl.trim();
+    if (!url) return;
+
+    // Restore the saved selection before inserting the link
+    if (savedSelection.current) {
+      const selection = window.getSelection();
+      selection?.removeAllRanges();
+      selection?.addRange(savedSelection.current);
+    }
+
+    const selection = window.getSelection();
+    if (!selection || selection.isCollapsed) {
+      const editor = editorRef.current;
+      if (editor) {
+        message.config({
+          getContainer: () => editor,
+        });
+        message.error("Please select text to turn into a link.");
+      }
+      return;
+    }
+
+    // Insert the link
+    document.execCommand("createLink", false, url);
+
+    // Post-process: add inline style to the newly created <a>
+    const editor = editorRef.current;
+    if (editor) {
+      const anchors = editor.getElementsByTagName("a");
+      for (let i = 0; i < anchors.length; i++) {
+        const a = anchors[i];
+        if (a.getAttribute("href") === url) {
+          a.setAttribute("style", "text-decoration: none;");
+          a.setAttribute("target", "_blank");
+          a.setAttribute("rel", "noopener noreferrer");
+        }
+      }
+    }
+
+    setLinkUrl("");
+    setLinkDropdownOpen(false);
+    savedSelection.current = null;
+  };
+
+  const [customBgModalVisible, setCustomBgModalVisible] = useState(false);
 
   return (
     <div className="w-fit border-2 border-blue-500 p-3 rounded-lg shadow-lg mx-auto mt-10">
@@ -427,13 +475,13 @@ function TextEditor({ onChange, bodyContent, documentHtml, className, imageChild
           tooltip="Align Right"
           icon={<AlignRightIcons />}
         />
-        <LinkDropdown
+        {/* <LinkDropdown
           open={linkDropdownOpen}
           setOpen={handleOpenLinkDropdown}
           linkUrl={linkUrl}
           setLinkUrl={setLinkUrl}
           insertLink={insertLink}
-        />
+        /> */}
         <ImageUpload
           children={imageChildren}
         />
@@ -454,6 +502,28 @@ function TextEditor({ onChange, bodyContent, documentHtml, className, imageChild
           onOk={handleInsertButton}
           onCancel={() => setButtonModalOpen(false)}
         />
+        <InsertButtonModal
+          open={editModalOpen}
+          buttonLabel={editButtonTitle}
+          buttonUrl={editButtonUrl}
+          buttonLabelError={buttonLabelError}
+          buttonUrlError={buttonUrlError}
+          onLabelChange={setEditButtonTitle}
+          onUrlChange={setEditButtonUrl}
+          onOk={handleEditButton}
+          onCancel={() => setEditModalOpen(false)}
+        />
+
+        <CustomBgModal
+          visible={customBgModalVisible}
+          onClose={() => setCustomBgModalVisible(false)}
+          onApply={(color) => {
+            if (selectedButton?.element) {
+              updateButtonStyle(selectedButton.element, color);
+            }
+          }}
+        />
+
       </div>
       <Editor ref={editorRef} className={className} />
       {selectedButton && (
