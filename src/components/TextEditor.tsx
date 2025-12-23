@@ -13,7 +13,7 @@ import ToolbarButton from "../components/ToolbarButton";
 import LinkDropdown from "../components/LinkDropdown";
 import Editor from "../components/Editor";
 import ImageUpload from "./imageUpload";
-
+import { Dropdown } from "antd";
 
 interface TextEditorProps {
   onChange?: (html: string) => void;
@@ -28,6 +28,11 @@ function TextEditor({ onChange, bodyContent, documentHtml, className, imageChild
   const [boldActive, setBoldActive] = useState(false);
   const [italicActive, setItalicActive] = useState(false);
   const [underlineActive, setUnderlineActive] = useState(false);
+  const [selectedButton, setSelectedButton] = useState<{
+    element: HTMLAnchorElement;
+    x: number;
+    y: number;
+  } | null>(null);
   const editorRef = useRef<HTMLDivElement>(null);
 
   // Set initial HTML content on mount or when bodyContent/documentHtml changes
@@ -42,7 +47,6 @@ function TextEditor({ onChange, bodyContent, documentHtml, className, imageChild
       }
     }
   }, [bodyContent, documentHtml]);
-
 
   const [formatBlock, setFormatBlock] = useState("");
   const [orderedListActive, setOrderedListActive] = useState(false);
@@ -277,10 +281,86 @@ function TextEditor({ onChange, bodyContent, documentHtml, className, imageChild
     editorRef.current?.focus();
   };
 
+  useEffect(() => {
+    let selectedBtn: HTMLAnchorElement | null = null;
+
+    const handleClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (!target) return;
+
+      // Use the ref directly to check if the clicked element is inside the editor
+      const btn = target.closest("a") as HTMLAnchorElement | null;
+      const editor = editorRef.current;
+
+      if (btn && editor && editor.contains(btn)) {
+        e.preventDefault(); // Prevent navigation to the link
+        if (selectedBtn && selectedBtn !== btn) {
+          selectedBtn.style.outline = "none";
+        }
+        btn.style.outline = "2px solid #3b82f6";
+        selectedBtn = btn;
+        setSelectedButton({ element: btn, x: e.clientX, y: e.clientY });
+      } else {
+        if (selectedBtn) {
+          selectedBtn.style.outline = "none";
+          selectedBtn = null;
+        }
+        setSelectedButton(null);
+      }
+    };
+
+    document.addEventListener("click", handleClick);
+    return () => document.removeEventListener("click", handleClick);
+  }, []);
+
+  const [buttonMenuPos, setButtonMenuPos] = useState({ top: 0, left: 0 });
+
+  const buttonMenuConfig = {
+    onClick: (info: any) => {
+      if (!selectedButton?.element) return;
+
+      const btn = selectedButton.element;
+
+      if (info.key === "edit") {
+        // Logic to edit the button
+        alert(`Edit button: ${btn.textContent}`);
+      } else if (info.key === "delete") {
+        // Logic to delete the button
+        btn.remove();
+        setSelectedButton(null);
+      } else if (info.key.startsWith("align-")) {
+        const alignment = info.key.replace("align-", "") as "left" | "center" | "right";
+        btn.style.textAlign = alignment;
+      }
+    },
+    items: [
+      { key: "edit", label: "Edit Button" },
+      { key: "delete", label: "Delete Button", danger: true },
+      { type: "divider" as const },
+      {
+        key: "align",
+        label: "Align Button",
+        children: [
+          { key: "align-left", label: "Left" },
+          { key: "align-center", label: "Center" },
+          { key: "align-right", label: "Right" },
+        ],
+      },
+    ],
+  };
+
+  useEffect(() => {
+    if (selectedButton) {
+      setButtonMenuPos({
+        top: selectedButton.y + 10, // Adjust dropdown position
+        left: selectedButton.x + 10,
+      });
+    }
+  }, [selectedButton]);
+
   return (
     <div className="w-fit border-2 border-blue-500 p-3 rounded-lg shadow-lg mx-auto mt-10">
       <div className="flex flex-wrap mb-2 gap-1">
-        
         <ToolbarButton
           active={boldActive}
           onClick={() => exec("bold")}
@@ -376,6 +456,28 @@ function TextEditor({ onChange, bodyContent, documentHtml, className, imageChild
         />
       </div>
       <Editor ref={editorRef} className={className} />
+      {selectedButton && (
+        <div
+          style={{
+            position: "absolute",
+            top: buttonMenuPos.top,
+            left: buttonMenuPos.left,
+            zIndex: 1000,
+            width: "200px",
+          }}
+        >
+          <Dropdown
+            menu={buttonMenuConfig}
+            trigger={["click"]}
+            open={true}
+            onOpenChange={(visible) => {
+              if (!visible) setSelectedButton(null);
+            }}
+          >
+            <span />
+          </Dropdown>
+        </div>
+      )}
     </div>
   );
 }
