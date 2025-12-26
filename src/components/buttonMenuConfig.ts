@@ -75,7 +75,7 @@ export const createButtonMenuConfig = (
         { key: "bg-#f59e0b", label: "Orange" },
         { key: "bg-#8b5cf6", label: "Purple" },
         { key: "bg-#000000", label: "Black" },
-        { key: "custom-bg-color", label: "Custom" },
+        // { key: "custom-bg-color", label: "Custom" },
       ],
     },
     {

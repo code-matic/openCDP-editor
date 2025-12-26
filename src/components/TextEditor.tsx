@@ -109,7 +109,7 @@ function TextEditor({ onChange, bodyContent, documentHtml, className, imageChild
       const html = `<a href="${buttonUrl}" target="_blank" rel="noopener noreferrer" style="text-decoration: none !important;">${buttonLabel}</a>`;
       document.execCommand("insertHTML", false, html);
       editorRef.current.focus();
-      handleSelectionChange();
+      // handleSelectionChange();
     }
     setButtonModalOpen(false);
     savedSelection.current = null;
@@ -126,23 +126,22 @@ function TextEditor({ onChange, bodyContent, documentHtml, className, imageChild
     }
   };
 
-  const handleSelectionChange = () => {
-    // Define handleSelectionChange logic or remove references if unnecessary
-    console.log("Selection changed");
-  };
+  // const handleSelectionChange = () => {
+  //   console.log("Selection changed");
+  // };
 
-  useEffect(() => {
-    const editor = editorRef.current;
-    if (!editor) return;
+  // useEffect(() => {
+  //   const editor = editorRef.current;
+  //   if (!editor) return;
 
-    document.addEventListener("selectionchange", handleSelectionChange);
-    editor.addEventListener("input", handleSelectionChange);
+  //   document.addEventListener("selectionchange", handleSelectionChange);
+  //   editor.addEventListener("input", handleSelectionChange);
 
-    return () => {
-      document.removeEventListener("selectionchange", handleSelectionChange);
-      editor.removeEventListener("input", handleSelectionChange);
-    };
-  }, []); // Remove handleSelectionChange from dependency array
+  //   return () => {
+  //     document.removeEventListener("selectionchange", handleSelectionChange);
+  //     editor.removeEventListener("input", handleSelectionChange);
+  //   };
+  // }, []); 
 
   const exec = (command: string, value?: string) => {
 
@@ -169,11 +168,10 @@ function TextEditor({ onChange, bodyContent, documentHtml, className, imageChild
       }
 
       // Update the bold state after executing the command
-      handleSelectionChange();
+      // handleSelectionChange();
     } else {
       document.execCommand(command, false, value);
-      // Update the bold state after executing the command
-      handleSelectionChange();
+      // handleSelectionChange();
     }
     editorRef.current?.focus();
   };
@@ -185,24 +183,34 @@ function TextEditor({ onChange, bodyContent, documentHtml, className, imageChild
       const target = e.target as HTMLElement | null;
       if (!target) return;
 
-      // Use the ref directly to check if the clicked element is inside the editor
       const btn = target.closest("a") as HTMLAnchorElement | null;
       const editor = editorRef.current;
 
       if (btn && editor && editor.contains(btn)) {
-        e.preventDefault(); // Prevent navigation to the link
+        e.preventDefault();
         if (selectedBtn && selectedBtn !== btn) {
           selectedBtn.style.outline = "none";
         }
         btn.style.outline = "2px solid #3b82f6";
         selectedBtn = btn;
         setSelectedButton({ element: btn, x: e.clientX, y: e.clientY });
+        console.log("Button selected:", btn);
       } else {
+        const dropdown = document.querySelector(".ant-dropdown");
+        const modal = document.querySelector(".ant-modal");
+        if (
+          (modal && modal.contains(target)) ||
+          (dropdown && dropdown.contains(target))
+        ) {
+          return;
+        }
+
         if (selectedBtn) {
           selectedBtn.style.outline = "none";
           selectedBtn = null;
         }
         setSelectedButton(null);
+        // console.log("No button selected.");
       }
     };
 
@@ -336,17 +344,22 @@ function TextEditor({ onChange, bodyContent, documentHtml, className, imageChild
           onCancel={() => setEditModalOpen(false)}
         />
 
-        <InsertButtonModal
+        {/* <InsertButtonModal
           mode="customBg"
           open={customBgModalVisible}
           onApply={(color) => {
+            console.log("Custom background color applied:", color);
             if (selectedButton?.element) {
+              console.log("Selected button element:", selectedButton.element);
               updateButtonStyle(selectedButton.element, color);
+            } else {
+              console.error("No button selected to apply background color.");
             }
           }}
+          selectedButton={selectedButton} 
           onOk={() => setCustomBgModalVisible(false)}
           onCancel={() => setCustomBgModalVisible(false)}
-        />
+        /> */}
 
       </div>
       <Editor ref={editorRef} className={className} />
