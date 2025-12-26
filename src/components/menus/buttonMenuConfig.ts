@@ -12,13 +12,20 @@ import {
 export const createButtonMenuConfig = (
   selectedButton: { element: HTMLAnchorElement } | null,
   setCustomBgModalVisible: (visible: boolean) => void,
-  setSelectedButton: (button: null) => void
+  setSelectedButton: (button: null) => void,
+  setEditModalOpen: (isOpen: boolean) => void,
+  setEditButtonTitle: (title: string) => void,
+  setEditButtonUrl: (url: string) => void,
+  setEditButtonElement: (element: HTMLAnchorElement | null) => void,
 ): DropdownProps["menu"] => ({
   onClick: (info: any) => {
     if (!selectedButton?.element) return;
     const btn = selectedButton.element;
     if (info.key === "edit") {
-      // Handle edit logic here
+      setEditButtonTitle(btn.innerText);
+      setEditButtonUrl(btn.getAttribute("href") || "");
+      setEditButtonElement(btn);
+      setEditModalOpen(true);
     } else if (info.key === "delete") {
       btn.remove();
       setSelectedButton(null);
