@@ -7,7 +7,7 @@ import {
   handleTextColorChange as updateButtonTextColor,
   handleBorderRadiusChange as updateButtonBorderRadius,
   handlePaddingChange as updateButtonPadding,
-} from "./TextEditorFunctions";
+} from "../TextEditorFunctions";
 
 export const createButtonMenuConfig = (
   selectedButton: { element: HTMLAnchorElement } | null,

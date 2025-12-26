@@ -3,7 +3,7 @@ import {
   handleImageResize,
   handleImageAlignment,
   handleImageBorder,
-} from "./imageEditing";
+} from "../imageEditing";
 
 export const createImageMenuConfig = (
   selectedImage: { element: HTMLImageElement; x: number; y: number } | null,

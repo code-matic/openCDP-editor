@@ -14,14 +14,9 @@ import Editor from "../components/Editor";
 import ImageUpload from "./imageUpload";
 import { Dropdown, message } from "antd";
 import { useTextEditorFunctions } from "./TextEditorFunctions";
-import { createButtonMenuConfig } from "./buttonMenuConfig";
-import { handleBackgroundColorChange as updateButtonStyle } from "./TextEditorFunctions";
-import { createImageMenuConfig } from "./imageMenuConfig";
-import {
-  handleImageResize,
-  handleImageAlignment,
-  handleImageBorder,
-} from "./imageEditing";
+import { createButtonMenuConfig } from "./menus/buttonMenuConfig";
+import { createImageMenuConfig } from "./menus/imageMenuConfig";
+import { createContainerMenuConfig } from "./menus/containerMenuConfig";
 
 interface TextEditorProps {
   onChange?: (html: string) => void;
@@ -52,6 +47,11 @@ function TextEditor({ onChange, bodyContent, documentHtml, className, imageChild
     x: number;
     y: number;
   } | null>(null);
+  const [selectedContainer, setSelectedContainer] = useState<{
+    element: HTMLElement;
+    x: number;
+    y: number;
+  } | null>(null);
   const editorRef = useRef<HTMLDivElement>(null);
   const savedSelection = useRef<Range | null>(null); 
 
@@ -74,6 +74,7 @@ function TextEditor({ onChange, bodyContent, documentHtml, className, imageChild
   const [buttonLabelError, setButtonLabelError] = useState("");
   const [buttonUrlError, setButtonUrlError] = useState("");
   const [buttonMenuPos, setButtonMenuPos] = useState({ top: 0, left: 0 });
+  const [containerMenuPos, setContainerMenuPos] = useState({ top: 0, left: 0 });
 
   // Add Ant Design modal for editing button title and URL
   const [editModalOpen, setEditModalOpen] = useState(false);
@@ -136,22 +137,22 @@ function TextEditor({ onChange, bodyContent, documentHtml, className, imageChild
     }
   };
 
-  // const handleSelectionChange = () => {
-  //   console.log("Selection changed");
-  // };
+  const handleSelectionChange = () => {
+    console.log("Selection changed");
+  };
 
-  // useEffect(() => {
-  //   const editor = editorRef.current;
-  //   if (!editor) return;
+  useEffect(() => {
+    const editor = editorRef.current;
+    if (!editor) return;
 
-  //   document.addEventListener("selectionchange", handleSelectionChange);
-  //   editor.addEventListener("input", handleSelectionChange);
+    document.addEventListener("selectionchange", handleSelectionChange);
+    editor.addEventListener("input", handleSelectionChange);
 
-  //   return () => {
-  //     document.removeEventListener("selectionchange", handleSelectionChange);
-  //     editor.removeEventListener("input", handleSelectionChange);
-  //   };
-  // }, []); 
+    return () => {
+      document.removeEventListener("selectionchange", handleSelectionChange);
+      editor.removeEventListener("input", handleSelectionChange);
+    };
+  }, []); 
 
   const exec = (command: string, value?: string) => {
 
@@ -189,6 +190,7 @@ function TextEditor({ onChange, bodyContent, documentHtml, className, imageChild
   useEffect(() => {
     let selectedBtn: HTMLAnchorElement | null = null;
     let selectedImg: HTMLImageElement | null = null;
+    let selectedCont: HTMLElement | null = null;
 
     const handleClick = (e: MouseEvent) => {
       const target = e.target as HTMLElement | null;
@@ -216,26 +218,50 @@ function TextEditor({ onChange, bodyContent, documentHtml, className, imageChild
         selectedImg = img;
         setSelectedImage({ element: img, x: e.clientX, y: e.clientY });
       } else {
-        const dropdown = document.querySelector(".ant-dropdown");
-        const modal = document.querySelector(".ant-modal");
-        if (
-          (modal && modal.contains(target)) ||
-          (dropdown && dropdown.contains(target))
-        ) {
-          return;
-        }
+        const selection = window.getSelection();
+        if (selection && selection.rangeCount > 0) {
+          const range = selection.getRangeAt(0);
+          const container = range.startContainer.parentElement?.closest("p, div, span, section, article, main, header, footer, aside, nav") as HTMLElement | null;
+          if (container && editor?.contains(container)) {
+            if (selectedCont && selectedCont !== container) {
+              selectedCont.style.outline = "none";
+            }
+            container.style.outline = "2px solid #3b82f6";
+            selectedCont = container as HTMLElement;
+            const rect = container.getBoundingClientRect();
+            setSelectedContainer({
+              element: container as HTMLElement,
+              x: rect.left,
+              y: rect.top,
+            });
+          }
+        } else {
+          const dropdown = document.querySelector(".ant-dropdown");
+          const modal = document.querySelector(".ant-modal");
+          if (
+            (modal && modal.contains(target)) ||
+            (dropdown && dropdown.contains(target))
+          ) {
+            return;
+          }
 
-        if (selectedBtn) {
-          selectedBtn.style.outline = "none";
-          selectedBtn = null;
+          if (selectedBtn) {
+            selectedBtn.style.outline = "none";
+            selectedBtn = null;
+          }
+          if (selectedImg) {
+            selectedImg.style.outline = "none";
+            selectedImg = null;
+          }
+          if (selectedCont) {
+            selectedCont.style.outline = "none";
+            selectedCont = null;
+          }
+          setSelectedButton(null);
+          setSelectedImage(null);
+          setSelectedContainer(null);
+          // console.log("No button selected.");
         }
-        if (selectedImg) {
-          selectedImg.style.outline = "none";
-          selectedImg = null;
-        }
-        setSelectedButton(null);
-        setSelectedImage(null);
-        // console.log("No button selected.");
       }
     };
 
@@ -252,6 +278,10 @@ function TextEditor({ onChange, bodyContent, documentHtml, className, imageChild
     setSelectedButton
   );
   const imageMenuConfig = createImageMenuConfig(selectedImage, setSelectedImage);
+  const containerMenuConfig = createContainerMenuConfig(
+    selectedContainer,
+    setSelectedContainer
+  );
 
   useEffect(() => {
     if (selectedButton) {
@@ -270,6 +300,15 @@ function TextEditor({ onChange, bodyContent, documentHtml, className, imageChild
       });
     }
   }, [selectedImage]);
+
+  useEffect(() => {
+    if (selectedContainer) {
+      setContainerMenuPos({
+        top: selectedContainer.y + 30,
+        left: selectedContainer.x + 10,
+      });
+    }
+  }, [selectedContainer]);
 
   return (
     <div className="w-fit border-2 border-blue-500 p-3 rounded-lg shadow-lg mx-auto mt-10">
@@ -384,13 +423,16 @@ function TextEditor({ onChange, bodyContent, documentHtml, className, imageChild
           onCancel={() => setEditModalOpen(false)}
         />
 
-        {/* <InsertButtonModal
+        <InsertButtonModal
           mode="customBg"
           open={customBgModalVisible}
           onApply={(color) => {
             console.log("Custom background color applied:", color);
             if (selectedButton?.element) {
               console.log("Selected button element:", selectedButton.element);
+              const updateButtonStyle = (button: HTMLAnchorElement, color: string) => {
+                button.style.backgroundColor = color;
+              };
               updateButtonStyle(selectedButton.element, color);
             } else {
               console.error("No button selected to apply background color.");
@@ -399,7 +441,7 @@ function TextEditor({ onChange, bodyContent, documentHtml, className, imageChild
           selectedButton={selectedButton} 
           onOk={() => setCustomBgModalVisible(false)}
           onCancel={() => setCustomBgModalVisible(false)}
-        /> */}
+        />
 
       </div>
       <Editor ref={editorRef} className={className} />
@@ -445,6 +487,29 @@ function TextEditor({ onChange, bodyContent, documentHtml, className, imageChild
             }}
           >
             <div style={{ width: '1px', height: '1px' }} />
+          </Dropdown>
+        </div>
+      )}
+
+      {selectedContainer && (
+        <div
+          style={{
+            position: "absolute",
+            top: containerMenuPos.top,
+            left: containerMenuPos.left,
+            zIndex: 1000,
+            width: "200px",
+          }}
+        >
+          <Dropdown
+            menu={containerMenuConfig}
+            trigger={["click"]}
+            open={true}
+            onOpenChange={(visible) => {
+              if (!visible) setSelectedContainer(null);
+            }}
+          >
+            <div style={{ width: "1px", height: "1px" }} />
           </Dropdown>
         </div>
       )}
