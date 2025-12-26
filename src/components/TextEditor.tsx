@@ -14,15 +14,8 @@ import Editor from "../components/Editor";
 import ImageUpload from "./imageUpload";
 import { Dropdown, message } from "antd";
 import { useTextEditorFunctions } from "./TextEditorFunctions";
-import {
-  removeBackground as removeButtonBackground,
-  removeBorder as removeButtonBorder,
-  removePadding as removeButtonPadding,
-  handleBackgroundColorChange as updateButtonStyle,
-  handleTextColorChange as updateButtonTextColor,
-  handleBorderRadiusChange as updateButtonBorderRadius,
-  handlePaddingChange as updateButtonPadding,
-} from "./TextEditorFunctions";
+import { createButtonMenuConfig } from "./buttonMenuConfig";
+import { handleBackgroundColorChange as updateButtonStyle } from "./TextEditorFunctions";
 
 interface TextEditorProps {
   onChange?: (html: string) => void;
@@ -50,13 +43,12 @@ function TextEditor({ onChange, bodyContent, documentHtml, className, imageChild
     y: number;
   } | null>(null);
   const editorRef = useRef<HTMLDivElement>(null);
-  const savedSelection = useRef<Range | null>(null); // Define savedSelection
+  const savedSelection = useRef<Range | null>(null); 
 
   // Set initial HTML content on mount or when bodyContent/documentHtml changes
   useEffect(() => {
     if (editorRef.current) {
       if (documentHtml) {
-        // Extract <body> content from documentHtml
         const match = documentHtml.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
         editorRef.current.innerHTML = match ? match[1] : "";
       } else if (bodyContent) {
@@ -218,126 +210,9 @@ function TextEditor({ onChange, bodyContent, documentHtml, className, imageChild
     return () => document.removeEventListener("click", handleClick);
   }, []);
 
+  const [customBgModalVisible, setCustomBgModalVisible] = useState(false);
 
-
-  const buttonMenuConfig = {
-    onClick: (info: any) => {
-      if (!selectedButton?.element) return;
-      const btn = selectedButton.element;
-      if (info.key === "edit") {
-        const editor = editorRef.current;
-        if (editor) {
-          setEditButtonTitle(btn.textContent || "");
-          setEditButtonUrl(btn.getAttribute("href") || "");
-          setEditButtonElement(btn);
-          setEditModalOpen(true);
-        }
-      } else if (info.key === "delete") {
-        btn.remove();
-        setSelectedButton(null);
-      } else if (info.key.startsWith("align-")) {
-        const alignment = info.key.replace("align-", "") as "left" | "center" | "right";
-        btn.style.textAlign = alignment;
-        const parentBlock = btn.closest("div, p, section, article") as HTMLElement | null;
-        if (parentBlock) {
-          parentBlock.style.textAlign = alignment;
-        }
-      } else {
-        // Ensure `button` is defined in the context
-        const button = selectedButton?.element;
-        if (!button) {
-          console.error("Button element is not defined.");
-          return;
-        }
-
-        // Replace the missing function calls with the imported ones
-        if (info.key.startsWith("bg-")) {
-          updateButtonStyle(button, info.key.replace("bg-", ""));
-        } else if (info.key.startsWith("text-")) {
-          updateButtonTextColor(button, info.key.replace("text-", ""));
-        } else if (info.key.startsWith("radius-")) {
-          updateButtonBorderRadius(button, info.key.replace("radius-", ""));
-        } else if (info.key.startsWith("padding-")) {
-          updateButtonPadding(button, info.key.replace("padding-", ""));
-        } else if (info.key === "remove-bg") {
-          removeButtonBackground(button);
-        } else if (info.key === "remove-border") {
-          removeButtonBorder(button);
-        } else if (info.key === "remove-padding") {
-          removeButtonPadding(button);
-        } else if (info.key === "custom-bg-color") {
-          console.log("Custom clicked");
-          setCustomBgModalVisible(true);
-          console.log("Modal visibility state:", customBgModalVisible);
-        }
-      }
-    },
-    items: [
-      { key: "edit", label: "Edit Button" },
-      {
-        key: "align",
-        label: "Align Button",
-        children: [
-          { key: "align-left", label: "Left" },
-          { key: "align-center", label: "Center" },
-          { key: "align-right", label: "Right" },
-        ],
-      },
-      {
-        key: "bg-color",
-        label: "Background Color",
-        children: [
-          { key: "bg-#3b82f6", label: "Blue" },
-          { key: "bg-#10b981", label: "Green" },
-          { key: "bg-#ef4444", label: "Red" },
-          { key: "bg-#f59e0b", label: "Orange" },
-          { key: "bg-#8b5cf6", label: "Purple" },
-          { key: "bg-#000000", label: "Black" },
-          {
-            key: "custom-bg-color",
-            label: "Custom",
-            onClick: () => {
-              setCustomBgModalVisible(true);
-            },
-          },
-        ],
-      },
-      {
-        key: "border-radius",
-        label: "Border Radius",
-        children: [
-          { key: "radius-0px", label: "Square" },
-          { key: "radius-2px", label: "Default" },
-          { key: "radius-4px", label: "Large" },
-          { key: "radius-9999px", label: "Pill" },
-        ],
-      },
-      {
-        key: "text-color",
-        label: "Text Color",
-        children: [
-          { key: "text-#ffffff", label: "White" },
-          { key: "text-#000000", label: "Black" },
-        ],
-      },
-      {
-        key: "padding",
-        label: "Padding",
-        children: [
-          { key: "padding-8px 16px", label: "Small" },
-          { key: "padding-12px 24px", label: "Default" },
-          { key: "padding-16px 32px", label: "Large" },
-          { key: "padding-20px 40px", label: "Extra Large" },
-        ],
-      },
-      { type: "divider" as const },
-      { key: "remove-bg", label: "Remove Background" },
-      { key: "remove-border", label: "Remove Border" },
-      { key: "remove-padding", label: "Remove Padding" },
-      { key: "delete", label: "Delete Button", danger: true },
-
-    ],
-  };
+  const buttonMenuConfig = createButtonMenuConfig(selectedButton, setCustomBgModalVisible, setSelectedButton);
 
   useEffect(() => {
     if (selectedButton) {
@@ -347,8 +222,6 @@ function TextEditor({ onChange, bodyContent, documentHtml, className, imageChild
       });
     }
   }, [selectedButton]);
-
-  const [customBgModalVisible, setCustomBgModalVisible] = useState(false);
 
   return (
     <div className="w-fit border-2 border-blue-500 p-3 rounded-lg shadow-lg mx-auto mt-10">
@@ -419,6 +292,7 @@ function TextEditor({ onChange, bodyContent, documentHtml, className, imageChild
           tooltip="Align Right"
           icon={<AlignRightIcons />}
         />
+
         {/* <LinkDropdown
           open={linkDropdownOpen}
           setOpen={handleOpenLinkDropdown}
@@ -448,6 +322,7 @@ function TextEditor({ onChange, bodyContent, documentHtml, className, imageChild
           onOk={handleInsertButton}
           onCancel={() => setButtonModalOpen(false)}
         />
+        
         <InsertButtonModal
           mode="insertButton"
           open={editModalOpen}
