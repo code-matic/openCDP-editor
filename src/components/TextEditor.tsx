@@ -249,7 +249,11 @@ function TextEditor({ onChange, bodyContent, documentHtml, className, imageChild
   const buttonMenuConfig = createButtonMenuConfig(
     selectedButton,
     setCustomBgModalVisible,
-    setSelectedButton
+    setSelectedButton,
+    setEditModalOpen,
+    setEditButtonTitle,
+    setEditButtonUrl,
+    setEditButtonElement
   );
   const imageMenuConfig = createImageMenuConfig(selectedImage, setSelectedImage);
 
