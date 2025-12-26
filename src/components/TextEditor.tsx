@@ -10,12 +10,10 @@ import UnorderedListIcon from "../components/icons/UnorderedList.icon";
 import OrderedListIcon from "../components/icons/OrderedList.icon";
 import ButtonIcon from "../components/icons/Button.icon";
 import ToolbarButton from "../components/ToolbarButton";
-import LinkDropdown from "../components/LinkDropdown";
 import Editor from "../components/Editor";
 import ImageUpload from "./imageUpload";
 import { Dropdown, message } from "antd";
 import { useTextEditorFunctions } from "./TextEditorFunctions";
-import CustomBgModal from "./CustomBgModal";
 import {
   removeBackground as removeButtonBackground,
   removeBorder as removeButtonBorder,
@@ -44,12 +42,6 @@ function TextEditor({ onChange, bodyContent, documentHtml, className, imageChild
     formatBlock,
     orderedListActive,
     unorderedListActive,
-    linkDropdownOpen,
-    linkUrl,
-    savedSelection,
-    handleSelectionChange,
-    setLinkDropdownOpen,
-    setLinkUrl,
   } = useTextEditorFunctions();
 
   const [selectedButton, setSelectedButton] = useState<{
@@ -58,6 +50,7 @@ function TextEditor({ onChange, bodyContent, documentHtml, className, imageChild
     y: number;
   } | null>(null);
   const editorRef = useRef<HTMLDivElement>(null);
+  const savedSelection = useRef<Range | null>(null); // Define savedSelection
 
   // Set initial HTML content on mount or when bodyContent/documentHtml changes
   useEffect(() => {
@@ -141,6 +134,11 @@ function TextEditor({ onChange, bodyContent, documentHtml, className, imageChild
     }
   };
 
+  const handleSelectionChange = () => {
+    // Define handleSelectionChange logic or remove references if unnecessary
+    console.log("Selection changed");
+  };
+
   useEffect(() => {
     const editor = editorRef.current;
     if (!editor) return;
@@ -152,7 +150,7 @@ function TextEditor({ onChange, bodyContent, documentHtml, className, imageChild
       document.removeEventListener("selectionchange", handleSelectionChange);
       editor.removeEventListener("input", handleSelectionChange);
     };
-  }, [handleSelectionChange]);
+  }, []); // Remove handleSelectionChange from dependency array
 
   const exec = (command: string, value?: string) => {
 
@@ -268,7 +266,9 @@ function TextEditor({ onChange, bodyContent, documentHtml, className, imageChild
         } else if (info.key === "remove-padding") {
           removeButtonPadding(button);
         } else if (info.key === "custom-bg-color") {
-          console.log("Custom background color button clicked");
+          console.log("Custom clicked");
+          setCustomBgModalVisible(true);
+          console.log("Modal visibility state:", customBgModalVisible);
         }
       }
     },
@@ -348,62 +348,6 @@ function TextEditor({ onChange, bodyContent, documentHtml, className, imageChild
     }
   }, [selectedButton]);
 
-  // Correctly use state setters for linkDropdownOpen and linkUrl
-  const handleOpenLinkDropdown = (open: boolean) => {
-    setLinkDropdownOpen(open);
-    if (open) {
-      const selection = window.getSelection();
-      if (selection && selection.rangeCount > 0) {
-        savedSelection.current = selection.getRangeAt(0).cloneRange();
-      }
-    }
-  };
-
-  const insertLink = () => {
-    const url = linkUrl.trim();
-    if (!url) return;
-
-    // Restore the saved selection before inserting the link
-    if (savedSelection.current) {
-      const selection = window.getSelection();
-      selection?.removeAllRanges();
-      selection?.addRange(savedSelection.current);
-    }
-
-    const selection = window.getSelection();
-    if (!selection || selection.isCollapsed) {
-      const editor = editorRef.current;
-      if (editor) {
-        message.config({
-          getContainer: () => editor,
-        });
-        message.error("Please select text to turn into a link.");
-      }
-      return;
-    }
-
-    // Insert the link
-    document.execCommand("createLink", false, url);
-
-    // Post-process: add inline style to the newly created <a>
-    const editor = editorRef.current;
-    if (editor) {
-      const anchors = editor.getElementsByTagName("a");
-      for (let i = 0; i < anchors.length; i++) {
-        const a = anchors[i];
-        if (a.getAttribute("href") === url) {
-          a.setAttribute("style", "text-decoration: none;");
-          a.setAttribute("target", "_blank");
-          a.setAttribute("rel", "noopener noreferrer");
-        }
-      }
-    }
-
-    setLinkUrl("");
-    setLinkDropdownOpen(false);
-    savedSelection.current = null;
-  };
-
   const [customBgModalVisible, setCustomBgModalVisible] = useState(false);
 
   return (
@@ -482,16 +426,18 @@ function TextEditor({ onChange, bodyContent, documentHtml, className, imageChild
           setLinkUrl={setLinkUrl}
           insertLink={insertLink}
         /> */}
+        
         <ImageUpload
           children={imageChildren}
         />
         <ToolbarButton
           onClick={insertButton}
           icon={<ButtonIcon />}
-          tooltip="Insert Button"
+          tooltip="InsertButton"
           label="Button"
         />
         <InsertButtonModal
+          mode="insertButton"
           open={buttonModalOpen}
           buttonLabel={buttonLabel}
           buttonUrl={buttonUrl}
@@ -503,6 +449,7 @@ function TextEditor({ onChange, bodyContent, documentHtml, className, imageChild
           onCancel={() => setButtonModalOpen(false)}
         />
         <InsertButtonModal
+          mode="insertButton"
           open={editModalOpen}
           buttonLabel={editButtonTitle}
           buttonUrl={editButtonUrl}
@@ -514,14 +461,16 @@ function TextEditor({ onChange, bodyContent, documentHtml, className, imageChild
           onCancel={() => setEditModalOpen(false)}
         />
 
-        <CustomBgModal
-          visible={customBgModalVisible}
-          onClose={() => setCustomBgModalVisible(false)}
+        <InsertButtonModal
+          mode="customBg"
+          open={customBgModalVisible}
           onApply={(color) => {
             if (selectedButton?.element) {
               updateButtonStyle(selectedButton.element, color);
             }
           }}
+          onOk={() => setCustomBgModalVisible(false)}
+          onCancel={() => setCustomBgModalVisible(false)}
         />
 
       </div>
