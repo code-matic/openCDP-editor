@@ -16,6 +16,12 @@ import { Dropdown, message } from "antd";
 import { useTextEditorFunctions } from "./TextEditorFunctions";
 import { createButtonMenuConfig } from "./buttonMenuConfig";
 import { handleBackgroundColorChange as updateButtonStyle } from "./TextEditorFunctions";
+import { createImageMenuConfig } from "./imageMenuConfig";
+import {
+  handleImageResize,
+  handleImageAlignment,
+  handleImageBorder,
+} from "./imageEditing";
 
 interface TextEditorProps {
   onChange?: (html: string) => void;
@@ -26,7 +32,6 @@ interface TextEditorProps {
 }
 
 function TextEditor({ onChange, bodyContent, documentHtml, className, imageChildren }: TextEditorProps) {
-
   const {
     align,
     boldActive,
@@ -39,6 +44,11 @@ function TextEditor({ onChange, bodyContent, documentHtml, className, imageChild
 
   const [selectedButton, setSelectedButton] = useState<{
     element: HTMLAnchorElement;
+    x: number;
+    y: number;
+  } | null>(null);
+  const [selectedImage, setSelectedImage] = useState<{
+    element: HTMLImageElement;
     x: number;
     y: number;
   } | null>(null);
@@ -178,12 +188,14 @@ function TextEditor({ onChange, bodyContent, documentHtml, className, imageChild
 
   useEffect(() => {
     let selectedBtn: HTMLAnchorElement | null = null;
+    let selectedImg: HTMLImageElement | null = null;
 
     const handleClick = (e: MouseEvent) => {
       const target = e.target as HTMLElement | null;
       if (!target) return;
 
       const btn = target.closest("a") as HTMLAnchorElement | null;
+      const img = target.closest("img") as HTMLImageElement | null;
       const editor = editorRef.current;
 
       if (btn && editor && editor.contains(btn)) {
@@ -195,6 +207,14 @@ function TextEditor({ onChange, bodyContent, documentHtml, className, imageChild
         selectedBtn = btn;
         setSelectedButton({ element: btn, x: e.clientX, y: e.clientY });
         console.log("Button selected:", btn);
+      } else if (img && editor && editor.contains(img)) {
+        e.preventDefault();
+        if (selectedImg && selectedImg !== img) {
+          selectedImg.style.outline = "none";
+        }
+        img.style.outline = "2px solid #3b82f6";
+        selectedImg = img;
+        setSelectedImage({ element: img, x: e.clientX, y: e.clientY });
       } else {
         const dropdown = document.querySelector(".ant-dropdown");
         const modal = document.querySelector(".ant-modal");
@@ -209,7 +229,12 @@ function TextEditor({ onChange, bodyContent, documentHtml, className, imageChild
           selectedBtn.style.outline = "none";
           selectedBtn = null;
         }
+        if (selectedImg) {
+          selectedImg.style.outline = "none";
+          selectedImg = null;
+        }
         setSelectedButton(null);
+        setSelectedImage(null);
         // console.log("No button selected.");
       }
     };
@@ -219,8 +244,14 @@ function TextEditor({ onChange, bodyContent, documentHtml, className, imageChild
   }, []);
 
   const [customBgModalVisible, setCustomBgModalVisible] = useState(false);
+  const [imageMenuPos, setImageMenuPos] = useState({ top: 0, left: 0 });
 
-  const buttonMenuConfig = createButtonMenuConfig(selectedButton, setCustomBgModalVisible, setSelectedButton);
+  const buttonMenuConfig = createButtonMenuConfig(
+    selectedButton,
+    setCustomBgModalVisible,
+    setSelectedButton
+  );
+  const imageMenuConfig = createImageMenuConfig(selectedImage, setSelectedImage);
 
   useEffect(() => {
     if (selectedButton) {
@@ -230,6 +261,15 @@ function TextEditor({ onChange, bodyContent, documentHtml, className, imageChild
       });
     }
   }, [selectedButton]);
+
+  useEffect(() => {
+    if (selectedImage) {
+      setImageMenuPos({
+        top: selectedImage.y + 10,
+        left: selectedImage.x + 10,
+      });
+    }
+  }, [selectedImage]);
 
   return (
     <div className="w-fit border-2 border-blue-500 p-3 rounded-lg shadow-lg mx-auto mt-10">
@@ -381,7 +421,30 @@ function TextEditor({ onChange, bodyContent, documentHtml, className, imageChild
               if (!visible) setSelectedButton(null);
             }}
           >
-            <span />
+            <div style={{ width: '1px', height: '1px' }} />
+          </Dropdown>
+        </div>
+      )}
+
+      {selectedImage && (
+        <div
+          style={{
+            position: "absolute",
+            top: imageMenuPos.top,
+            left: imageMenuPos.left,
+            zIndex: 1000,
+            width: "200px",
+          }}
+        >
+          <Dropdown
+            menu={imageMenuConfig}
+            trigger={["click"]}
+            open={true}
+            onOpenChange={(visible) => {
+              if (!visible) setSelectedImage(null);
+            }}
+          >
+            <div style={{ width: '1px', height: '1px' }} />
           </Dropdown>
         </div>
       )}
