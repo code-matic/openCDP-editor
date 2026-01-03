@@ -15,7 +15,7 @@ const Editor = forwardRef<HTMLDivElement, EditorProps>(({ initialHtml, className
   return (
     <div
       ref={ref}
-      className={`${className} h-[400px] box-border border border-gray-300 overflow-y-auto p-2 rounded-lg focus:outline-none scrollbar-thin scrollbar-thumb-gray-400`}
+      className={`open-cdp-editor ${className} h-[400px] box-border border border-gray-300 overflow-y-auto p-2 rounded-lg focus:outline-none scrollbar-thin scrollbar-thumb-gray-400`}
       contentEditable
     ></div>
   );

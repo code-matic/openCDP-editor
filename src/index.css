@@ -88,3 +88,7 @@ a{
     transform: rotate(1turn)
   }
 }
+
+.open-cdp-editor img:hover {
+  cursor: pointer;
+}

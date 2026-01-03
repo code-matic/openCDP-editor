@@ -53,7 +53,7 @@ function TextEditor({ onChange, bodyContent, documentHtml, className, imageChild
     y: number;
   } | null>(null);
   const editorRef = useRef<HTMLDivElement>(null);
-  const savedSelection = useRef<Range | null>(null); 
+  const savedSelection = useRef<Range | null>(null);
 
   // Set initial HTML content on mount or when bodyContent/documentHtml changes
   useEffect(() => {
@@ -67,7 +67,7 @@ function TextEditor({ onChange, bodyContent, documentHtml, className, imageChild
     }
   }, [bodyContent, documentHtml]);
 
-  
+
   // State for modal and input fields
   const [buttonModalOpen, setButtonModalOpen] = useState(false);
   const [buttonLabel, setButtonLabel] = useState("");
@@ -80,6 +80,8 @@ function TextEditor({ onChange, bodyContent, documentHtml, className, imageChild
   const [editButtonTitle, setEditButtonTitle] = useState("");
   const [editButtonUrl, setEditButtonUrl] = useState("");
   const [editButtonElement, setEditButtonElement] = useState<HTMLAnchorElement | null>(null);
+  const [customBgModalVisible, setCustomBgModalVisible] = useState(false);
+  const [imageMenuPos, setImageMenuPos] = useState({ top: 0, left: 0 });
 
 
   const handleImageSelect = (src: string) => {
@@ -172,7 +174,7 @@ function TextEditor({ onChange, bodyContent, documentHtml, className, imageChild
       document.removeEventListener("selectionchange", handleSelectionChange);
       editor.removeEventListener("input", handleSelectionChange);
     };
-  }, []); 
+  }, []);
 
   const exec = (command: string, value?: string) => {
 
@@ -292,9 +294,6 @@ function TextEditor({ onChange, bodyContent, documentHtml, className, imageChild
     return () => document.removeEventListener("click", handleClick);
   }, []);
 
-  const [customBgModalVisible, setCustomBgModalVisible] = useState(false);
-  const [imageMenuPos, setImageMenuPos] = useState({ top: 0, left: 0 });
-
   const buttonMenuConfig = createButtonMenuConfig(
     selectedButton,
     setCustomBgModalVisible,
@@ -319,6 +318,7 @@ function TextEditor({ onChange, bodyContent, documentHtml, className, imageChild
     }
   }, [selectedButton]);
 
+
   useEffect(() => {
     if (selectedImage) {
       setImageMenuPos({
@@ -336,6 +336,7 @@ function TextEditor({ onChange, bodyContent, documentHtml, className, imageChild
       });
     }
   }, [selectedContainer]);
+
 
   return (
     <div className="w-fit border-2 border-blue-500 p-3 rounded-lg shadow-lg mx-auto mt-10">
@@ -414,7 +415,7 @@ function TextEditor({ onChange, bodyContent, documentHtml, className, imageChild
           setLinkUrl={setLinkUrl}
           insertLink={insertLink}
         /> */}
-        
+
         <ImageUpload
           children={imageChildren}
           onImageSelect={handleImageSelect}
@@ -437,7 +438,7 @@ function TextEditor({ onChange, bodyContent, documentHtml, className, imageChild
           onOk={handleInsertButton}
           onCancel={() => setButtonModalOpen(false)}
         />
-        
+
         <InsertButtonModal
           mode="insertButton"
           open={editModalOpen}
@@ -466,7 +467,7 @@ function TextEditor({ onChange, bodyContent, documentHtml, className, imageChild
               console.error("No button selected to apply background color.");
             }
           }}
-          selectedButton={selectedButton} 
+          selectedButton={selectedButton}
           onOk={() => setCustomBgModalVisible(false)}
           onCancel={() => setCustomBgModalVisible(false)}
         />
@@ -527,16 +528,14 @@ function TextEditor({ onChange, bodyContent, documentHtml, className, imageChild
             left: containerMenuPos.left,
             zIndex: 1000,
             width: "200px",
-          }}
-        >
+          }}>
           <Dropdown
             menu={containerMenuConfig}
             trigger={["click"]}
             open={true}
             onOpenChange={(visible) => {
               if (!visible) setSelectedContainer(null);
-            }}
-          >
+            }}>
             <div style={{ width: "1px", height: "1px" }} />
           </Dropdown>
         </div>
