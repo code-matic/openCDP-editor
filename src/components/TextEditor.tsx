@@ -67,6 +67,7 @@ function TextEditor({ onChange, bodyContent, documentHtml, className, imageChild
     }
   }, [bodyContent, documentHtml]);
 
+  
   // State for modal and input fields
   const [buttonModalOpen, setButtonModalOpen] = useState(false);
   const [buttonLabel, setButtonLabel] = useState("");
@@ -75,12 +76,31 @@ function TextEditor({ onChange, bodyContent, documentHtml, className, imageChild
   const [buttonUrlError, setButtonUrlError] = useState("");
   const [buttonMenuPos, setButtonMenuPos] = useState({ top: 0, left: 0 });
   const [containerMenuPos, setContainerMenuPos] = useState({ top: 0, left: 0 });
-
-  // Add Ant Design modal for editing button title and URL
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [editButtonTitle, setEditButtonTitle] = useState("");
   const [editButtonUrl, setEditButtonUrl] = useState("");
   const [editButtonElement, setEditButtonElement] = useState<HTMLAnchorElement | null>(null);
+
+
+  const handleImageSelect = (src: string) => {
+    if (editorRef.current) {
+      editorRef.current.focus();
+      const selection = window.getSelection();
+      if (selection && selection.rangeCount > 0) {
+        const range = selection.getRangeAt(0);
+        const img = document.createElement("img");
+        img.src = src;
+        img.style.maxWidth = "100%";
+        range.insertNode(img);
+        range.collapse(false);
+      } else {
+        const img = document.createElement("img");
+        img.src = src;
+        img.style.maxWidth = "100%";
+        editorRef.current.appendChild(img);
+      }
+    }
+  };
 
   // Show modal and save selection
   const insertButton = () => {
@@ -196,10 +216,39 @@ function TextEditor({ onChange, bodyContent, documentHtml, className, imageChild
       const target = e.target as HTMLElement | null;
       if (!target) return;
 
+      const editor = editorRef.current;
+      const dropdown = document.querySelector(".ant-dropdown");
+      const modal = document.querySelector(".ant-modal");
+
+      // If the click is inside a dropdown or modal, do nothing
+      if ((modal && modal.contains(target)) || (dropdown && dropdown.contains(target))) {
+        return;
+      }
+
       const btn = target.closest("a") as HTMLAnchorElement | null;
       const img = target.closest("img") as HTMLImageElement | null;
-      const editor = editorRef.current;
 
+      // If the click is outside the editor, deselect everything
+      if (editor && !editor.contains(target)) {
+        if (selectedBtn) {
+          selectedBtn.style.outline = "none";
+          selectedBtn = null;
+        }
+        if (selectedImg) {
+          selectedImg.style.outline = "none";
+          selectedImg = null;
+        }
+        if (selectedCont) {
+          selectedCont.style.outline = "none";
+          selectedCont = null;
+        }
+        setSelectedButton(null);
+        setSelectedImage(null);
+        setSelectedContainer(null);
+        return;
+      }
+
+      // Handle clicks inside the editor
       if (btn && editor && editor.contains(btn)) {
         e.preventDefault();
         if (selectedBtn && selectedBtn !== btn) {
@@ -235,32 +284,6 @@ function TextEditor({ onChange, bodyContent, documentHtml, className, imageChild
               y: rect.top,
             });
           }
-        } else {
-          const dropdown = document.querySelector(".ant-dropdown");
-          const modal = document.querySelector(".ant-modal");
-          if (
-            (modal && modal.contains(target)) ||
-            (dropdown && dropdown.contains(target))
-          ) {
-            return;
-          }
-
-          if (selectedBtn) {
-            selectedBtn.style.outline = "none";
-            selectedBtn = null;
-          }
-          if (selectedImg) {
-            selectedImg.style.outline = "none";
-            selectedImg = null;
-          }
-          if (selectedCont) {
-            selectedCont.style.outline = "none";
-            selectedCont = null;
-          }
-          setSelectedButton(null);
-          setSelectedImage(null);
-          setSelectedContainer(null);
-          // console.log("No button selected.");
         }
       }
     };
@@ -394,11 +417,12 @@ function TextEditor({ onChange, bodyContent, documentHtml, className, imageChild
         
         <ImageUpload
           children={imageChildren}
+          onImageSelect={handleImageSelect}
         />
         <ToolbarButton
           onClick={insertButton}
           icon={<ButtonIcon />}
-          tooltip="InsertButton"
+          tooltip="Insert Button"
           label="Button"
         />
         <InsertButtonModal

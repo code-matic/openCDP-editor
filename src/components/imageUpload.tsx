@@ -5,11 +5,21 @@ import React, { useState } from "react";
 
 interface ImageUploadProps {
     children?: React.ReactNode;
+    onImageSelect: (src: string) => void;
 }
 
-const ImageUpload: React.FC<ImageUploadProps> = ({ children }) => {
+const ImageUpload: React.FC<ImageUploadProps> = ({ children, onImageSelect }) => {
 
     const [openImageModal, setOpenImageModal] = useState(false);
+
+    const handleImageClick = (event: React.MouseEvent<HTMLDivElement>) => {
+        const target = event.target as HTMLElement;
+        if (target.tagName === "IMG") {
+            const imageElement = target as HTMLImageElement;
+            onImageSelect(imageElement.src);
+            setOpenImageModal(false);
+        }
+    };
 
     return (
         <div>
@@ -20,7 +30,9 @@ const ImageUpload: React.FC<ImageUploadProps> = ({ children }) => {
             />
             {openImageModal && (
                 <ImageModal onClose={() => setOpenImageModal(false)}>
-                    {children}
+                    <div onClick={handleImageClick}>
+                        {children}
+                    </div>
                 </ImageModal>
             )}
         </div>
