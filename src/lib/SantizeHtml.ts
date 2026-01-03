@@ -1,36 +1,6 @@
 // sanitizeHTML.ts
 import DOMPurify from 'dompurify';
 
-// Hook to sanitize CSS styles manually
-// DOMPurify.addHook('uponSanitizeAttribute', (node) => {
-//   if (!node || typeof node.hasAttribute !== "function") return;
-//   if (node.hasAttribute('style')) {
-//     const style = node.getAttribute('style') || '';
-
-//     // Allow only safe styles
-//     const safeStyles = style
-//       .split(';')
-//       .map(s => s.trim())
-//       .filter(s => {
-//         const [prop] = s.split(':').map(p => p.trim().toLowerCase());
-//         return [
-//           'color',
-//           'font-weight',
-//           'font-style',
-//           'text-decoration',
-//           'background-color',
-//           'font-size',
-//           'text-align',
-//         ].includes(prop);
-//       })
-//       .join('; ');
-//     if (safeStyles) {
-//       node.setAttribute('style', safeStyles);
-//     } else {
-//       node.removeAttribute('style');
-//     }
-//   }
-// });
 
 DOMPurify.addHook('uponSanitizeAttribute', (node, data) => {
   if (!node || typeof node.hasAttribute !== "function") return;
@@ -52,6 +22,20 @@ DOMPurify.addHook('uponSanitizeAttribute', (node, data) => {
           'background-color',
           'font-size',
           'text-align',
+          'float',
+          'margin',
+          'margin-left',
+          'margin-right',
+          'margin-top',
+          'margin-bottom',
+          'display',
+          'width',
+          'max-width',
+          'height',
+          'padding',
+          'border-radius',
+          'object-fit',
+          'cursor'
         ].includes(prop);
       })
       .join('; ');
@@ -69,8 +53,8 @@ DOMPurify.addHook('uponSanitizeAttribute', (node, data) => {
 // Your sanitize function
 export function sanitizeHTML(dirty: string): string {
   return DOMPurify.sanitize(dirty, {
-    ALLOWED_TAGS: ['b', 'i', 'u', 'strong', 'em', 'span', 'div', 'br', 'p', 'h1', 'h2', 'h3', 'ul', 'ol', 'li', 'a'],
-    ALLOWED_ATTR: ['style', 'href', 'target', 'rel'],
+    ALLOWED_TAGS: ['b', 'i', 'u', 'strong', 'em', 'span', 'div', 'br', 'p', 'h1', 'h2', 'h3', 'ul', 'ol', 'li', 'a', 'img'],
+    ALLOWED_ATTR: ['style', 'href', 'target', 'rel', 'src', 'alt', 'width', 'height', 'draggable'],
     FORBID_ATTR: ['onerror', 'onclick', 'onload'],
     FORBID_TAGS: ['script', 'iframe', 'object', 'embed'],
   });

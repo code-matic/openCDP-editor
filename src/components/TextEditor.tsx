@@ -17,16 +17,18 @@ import { useTextEditorFunctions } from "./TextEditorFunctions";
 import { createButtonMenuConfig } from "./menus/buttonMenuConfig";
 import { createImageMenuConfig } from "./menus/imageMenuConfig";
 import { createContainerMenuConfig } from "./menus/containerMenuConfig";
+import { sanitizeHTML } from "../lib/SantizeHtml";
+import { getFullHTML } from "../lib/exportHTML";
 
 interface TextEditorProps {
   onChange?: (html: string) => void;
   className?: string;
-  bodyContent?: string;
-  documentHtml?: string;
+  initialValue?: string;
   imageChildren?: React.ReactNode;
+  exportFullHTML?: boolean;
 }
 
-function TextEditor({ onChange, bodyContent, documentHtml, className, imageChildren }: TextEditorProps) {
+function TextEditor({ onChange, className, initialValue, imageChildren, exportFullHTML }: TextEditorProps) {
   const {
     align,
     boldActive,
@@ -55,17 +57,17 @@ function TextEditor({ onChange, bodyContent, documentHtml, className, imageChild
   const editorRef = useRef<HTMLDivElement>(null);
   const savedSelection = useRef<Range | null>(null);
 
-  // Set initial HTML content on mount or when bodyContent/documentHtml changes
+
+  // Set initial HTML content on mount or when initialValue changes
   useEffect(() => {
-    if (editorRef.current) {
-      if (documentHtml) {
-        const match = documentHtml.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
-        editorRef.current.innerHTML = match ? match[1] : "";
-      } else if (bodyContent) {
-        editorRef.current.innerHTML = bodyContent;
-      }
+    if (editorRef.current && initialValue) {
+      const match = initialValue.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
+      const content = match ? match[1] : initialValue;
+      editorRef.current.innerHTML = sanitizeHTML(content);
+    } else if (editorRef.current) {
+      editorRef.current.innerHTML = "";
     }
-  }, [bodyContent, documentHtml]);
+  }, [initialValue]);
 
 
   // State for modal and input fields
@@ -93,12 +95,14 @@ function TextEditor({ onChange, bodyContent, documentHtml, className, imageChild
         const img = document.createElement("img");
         img.src = src;
         img.style.maxWidth = "100%";
+        img.draggable = true;
         range.insertNode(img);
         range.collapse(false);
       } else {
         const img = document.createElement("img");
         img.src = src;
         img.style.maxWidth = "100%";
+        img.draggable = true;
         editorRef.current.appendChild(img);
       }
     }
@@ -160,19 +164,84 @@ function TextEditor({ onChange, bodyContent, documentHtml, className, imageChild
   };
 
   const handleSelectionChange = () => {
-    console.log("Selection changed");
+    // We can add logic here to update UI based on text selection if needed
   };
 
   useEffect(() => {
     const editor = editorRef.current;
     if (!editor) return;
 
+    const handleInput = () => {
+      if (onChange) {
+        const editorContent = editor.innerHTML;
+        if (exportFullHTML) {
+          onChange(getFullHTML(editorContent));
+        } else {
+          onChange(editorContent);
+        }
+      }
+    };
+
     document.addEventListener("selectionchange", handleSelectionChange);
-    editor.addEventListener("input", handleSelectionChange);
+    editor.addEventListener("input", handleInput);
 
     return () => {
       document.removeEventListener("selectionchange", handleSelectionChange);
-      editor.removeEventListener("input", handleSelectionChange);
+      editor.removeEventListener("input", handleInput);
+    };
+  }, [onChange, exportFullHTML]);
+
+  useEffect(() => {
+    const editor = editorRef.current;
+    if (!editor) return;
+
+    let draggedImage: HTMLImageElement | null = null;
+
+    const handleDragStart = (e: DragEvent) => {
+      if (e.target && (e.target as HTMLElement).tagName === 'IMG') {
+        draggedImage = e.target as HTMLImageElement;
+        e.dataTransfer?.setData('text/html', draggedImage.outerHTML);
+        e.dataTransfer?.setData('text/plain', draggedImage.src);
+      }
+    };
+
+    const handleDragOver = (e: DragEvent) => {
+      e.preventDefault();
+    };
+
+    const handleDrop = (e: DragEvent) => {
+      e.preventDefault();
+      if (draggedImage && editor.contains(draggedImage)) {
+        const range = getRangeFromDropEvent(e);
+        if (range) {
+          const newImage = draggedImage.cloneNode(true) as HTMLImageElement;
+          range.insertNode(newImage);
+          range.collapse(false);
+          draggedImage.parentNode?.removeChild(draggedImage);
+        }
+      }
+      draggedImage = null;
+    };
+
+    const getRangeFromDropEvent = (e: DragEvent): Range | null => {
+      if (document.caretRangeFromPoint) {
+        return document.caretRangeFromPoint(e.clientX, e.clientY);
+      } else if ((e as any).rangeParent) {
+        const range = document.createRange();
+        range.setStart((e as any).rangeParent, (e as any).rangeOffset);
+        return range;
+      }
+      return null;
+    };
+
+    editor.addEventListener('dragstart', handleDragStart);
+    editor.addEventListener('dragover', handleDragOver);
+    editor.addEventListener('drop', handleDrop);
+
+    return () => {
+      editor.removeEventListener('dragstart', handleDragStart);
+      editor.removeEventListener('dragover', handleDragOver);
+      editor.removeEventListener('drop', handleDrop);
     };
   }, []);
 

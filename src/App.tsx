@@ -38,9 +38,9 @@ function App() {
 
   return (
     <TextEditor
-      bodyContent={initialHTML}
-      // documentHtml={initialHTML}
-      className="!h-[300px]"
+      initialValue={initialHTML}
+      exportFullHTML
+      className="!h-[600px]"
       imageChildren={
         <div
           style={{
