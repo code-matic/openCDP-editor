@@ -19,6 +19,7 @@ import { createImageMenuConfig } from "./menus/imageMenuConfig";
 import { createContainerMenuConfig } from "./menus/containerMenuConfig";
 import { sanitizeHTML } from "../lib/SantizeHtml";
 import { getFullHTML } from "../lib/exportHTML";
+import { processInitialValue } from "../lib/processInitialValue";
 
 interface TextEditorProps {
   onChange?: (html: string) => void;
@@ -61,9 +62,8 @@ function TextEditor({ onChange, className, initialValue, imageChildren, exportFu
   // Set initial HTML content on mount or when initialValue changes
   useEffect(() => {
     if (editorRef.current && initialValue) {
-      const match = initialValue.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
-      const content = match ? match[1] : initialValue;
-      editorRef.current.innerHTML = sanitizeHTML(content);
+      const processedContent = processInitialValue(initialValue);
+      editorRef.current.innerHTML = sanitizeHTML(processedContent);
     } else if (editorRef.current) {
       editorRef.current.innerHTML = "";
     }
