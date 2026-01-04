@@ -37,6 +37,9 @@
     "Open Source"
   ],
   "author": "codematic.io",
+  "resolutions": {
+    "postcss": "^8.4.38"
+  },
   "dependencies": {
     "antd": "^6.1.0",
     "dompurify": "^3.2.6",
