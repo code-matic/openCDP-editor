@@ -37,8 +37,8 @@
     "Open Source"
   ],
   "author": "codematic.io",
-  "resolutions": {
-    "postcss": "^8.4.38"
+  "overrides": {
+    "postcss-calc": "^9.0.1"
   },
   "dependencies": {
     "antd": "^6.1.0",

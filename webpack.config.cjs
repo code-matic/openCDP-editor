@@ -8,20 +8,10 @@ const common = {
     extensions: ['.ts', '.tsx', '.js', '.jsx'],
   },
   externals: {
-  react: {
-    commonjs: "react",
-    commonjs2: "react",
-    amd: "react",
-    root: "React"
+    react: 'react',
+    'react-dom': 'react-dom',
+    antd: 'antd',
   },
-  "react-dom": {
-    commonjs: "react-dom",
-    commonjs2: "react-dom",
-    amd: "react-dom",
-    root: "ReactDOM"
-  },
-  antd: "antd"
-},
   module: {
     rules: [
       {
@@ -73,10 +63,14 @@ module.exports = [
     output: {
       path: path.resolve(__dirname, 'dist'),
       filename: 'index.js',
-      library: { type: 'module' },
-      clean: true,
+      library: {
+        type: 'module',
+      },
+      clean: true, // Clean only on the first build
     },
-    experiments: { outputModule: true },
+    experiments: {
+      outputModule: true,
+    },
     plugins: [new MiniCssExtractPlugin({ filename: 'index.css' })],
   },
   // CJS build
@@ -86,7 +80,9 @@ module.exports = [
     output: {
       path: path.resolve(__dirname, 'dist'),
       filename: 'index.cjs',
-      library: { type: 'commonjs2' },
+      library: {
+        type: 'commonjs2',
+      },
     },
     plugins: [new MiniCssExtractPlugin({ filename: 'index.css' })],
   },
