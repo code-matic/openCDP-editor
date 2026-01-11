@@ -7,11 +7,14 @@ const common = {
   resolve: {
     extensions: ['.ts', '.tsx', '.js', '.jsx'],
   },
-  externals: ({ request }, callback) => {
-  if (['react', 'react-dom', 'antd'].includes(request)) {
-    return callback(null, request);
-  }
-  callback();
+  externals: {
+    react: 'react',
+    'react-dom': 'react-dom',
+    'react/jsx-runtime': 'react/jsx-runtime', // Important for React 17+
+    antd: 'antd',
+  },
+  externalsPresets: {
+  node: true, // For Node.js compatibility
 },
   module: {
     rules: [
@@ -69,6 +72,7 @@ module.exports = [
       },
       clean: true, // Clean only on the first build
     },
+    externalsType: 'module',
     experiments: {
       outputModule: true,
     },

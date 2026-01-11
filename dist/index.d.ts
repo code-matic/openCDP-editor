@@ -1,4 +1,3 @@
-import TextEditor from './components/TextEditor';
+import 'antd/dist/antd.css';
 import './index.css';
-export default TextEditor;
-//# sourceMappingURL=lib.d.ts.map
+//# sourceMappingURL=index.d.ts.map

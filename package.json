@@ -4,7 +4,7 @@
   "description": "A customizable React rich text editor component built with TailwindCSS and Ant Design, designed for seamless integration into openCDP and modern React applications.",
   "main": "dist/index.cjs",
   "module": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "types": "dist//lib.d.ts",
   "sideEffects": false,
   "exports": {
     ".": {
@@ -41,23 +41,20 @@
     "postcss-calc": "^9.0.1"
   },
   "dependencies": {
-    "antd": "^6.1.0",
-    "dompurify": "^3.2.6",
-    "react": "^17.0.0 || ^18.0.0 || ^19.0.0",
-    "react-dom": "^17.0.0 || ^18.0.0 || ^19.0.0"
+    "dompurify": "^3.2.6"
   },
-  "scripts": {
-    "start": "react-scripts start",
+"scripts": {
+  "start": "react-scripts start",
     "build": "react-scripts build",
-    "clean": "rimraf dist",
-    "webpack-build": "npm run clean && npm run build:js && npm run build:types",
-    "build:types": "tsc --emitDeclarationOnly && node scripts/rename-types.js",
-    "build:js": "webpack --mode production",
-    "test": "react-scripts test"
-  },
+  "clean": "rimraf dist",
+  "build:js": "webpack --mode production",
+  "build:types": "tsc", 
+  "webpack-build": "npm run clean && npm run build:js && npm run build:types"
+},
   "peerDependencies": {
-    "react": "^17.0.0 || ^18.0.0 || ^19.0.0",
-    "react-dom": "^17.0.0 || ^18.0.0 || ^19.0.0"
+    "antd": "^6.1.0",
+    "react": "^17.0.0 || ^18.0.0",
+    "react-dom": "^17.0.0 || ^18.0.0"
   },
   "eslintConfig": {
     "extends": [
@@ -90,8 +87,8 @@
     "@testing-library/user-event": "^13.5.0",
     "@types/jest": "^27.5.2",
     "@types/node": "^16.18.126",
-    "@types/react": "^19.1.9",
-    "@types/react-dom": "^19.1.7",
+    "@types/react": "^17.0.0",
+    "@types/react-dom": "^17.0.0",
     "autoprefixer": "^10.4.21",
     "babel-loader": "^10.0.0",
     "css-loader": "^7.1.2",

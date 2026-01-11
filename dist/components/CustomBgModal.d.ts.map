@@ -1,0 +1,1 @@
+{"version":3,"file":"CustomBgModal.d.ts","sourceRoot":"","sources":["../../src/components/CustomBgModal.tsx"],"names":[],"mappings":"AAAA,OAAO,KAAmB,MAAM,OAAO,CAAC;AAGxC,UAAU,kBAAkB;IAC1B,OAAO,EAAE,OAAO,CAAC;IACjB,OAAO,EAAE,MAAM,IAAI,CAAC;IACpB,OAAO,EAAE,CAAC,KAAK,EAAE,MAAM,KAAK,IAAI,CAAC;CAClC;AAED,QAAA,MAAM,aAAa,EAAE,KAAK,CAAC,EAAE,CAAC,kBAAkB,CA6B/C,CAAC;AAEF,eAAe,aAAa,CAAC"}
