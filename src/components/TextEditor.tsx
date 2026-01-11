@@ -291,71 +291,82 @@ function TextEditor({ onChange, className, initialValue, imageChildren, exportFu
       const dropdown = document.querySelector(".ant-dropdown");
       const modal = document.querySelector(".ant-modal");
 
-      // If the click is inside a dropdown or modal, do nothing
       if ((modal && modal.contains(target)) || (dropdown && dropdown.contains(target))) {
         return;
       }
 
-      const btn = target.closest("a") as HTMLAnchorElement | null;
-      const img = target.closest("img") as HTMLImageElement | null;
+      const btn = target.closest("a");
+      const img = target.closest("img");
 
-      // If the click is outside the editor, deselect everything
-      if (editor && !editor.contains(target)) {
+      const deselectAll = () => {
         if (selectedBtn) {
           selectedBtn.style.outline = "none";
           selectedBtn = null;
+          setSelectedButton(null);
         }
         if (selectedImg) {
           selectedImg.style.outline = "none";
           selectedImg = null;
+          setSelectedImage(null);
         }
         if (selectedCont) {
           selectedCont.style.outline = "none";
           selectedCont = null;
+          setSelectedContainer(null);
         }
-        setSelectedButton(null);
-        setSelectedImage(null);
-        setSelectedContainer(null);
+      };
+
+      if (editor && !editor.contains(target)) {
+        deselectAll();
         return;
       }
 
-      // Handle clicks inside the editor
-      if (btn && editor && editor.contains(btn)) {
+      let elementClicked = false;
+
+      if (btn && editor?.contains(btn)) {
         e.preventDefault();
-        if (selectedBtn && selectedBtn !== btn) {
-          selectedBtn.style.outline = "none";
+        if (selectedBtn !== btn) {
+          deselectAll();
         }
         btn.style.outline = "2px solid #3b82f6";
         selectedBtn = btn;
         setSelectedButton({ element: btn, x: e.clientX, y: e.clientY });
-        console.log("Button selected:", btn);
-      } else if (img && editor && editor.contains(img)) {
+        elementClicked = true;
+      } else if (img && editor?.contains(img)) {
         e.preventDefault();
-        if (selectedImg && selectedImg !== img) {
-          selectedImg.style.outline = "none";
+        if (selectedImg !== img) {
+          deselectAll();
         }
         img.style.outline = "2px solid #3b82f6";
         selectedImg = img;
         setSelectedImage({ element: img, x: e.clientX, y: e.clientY });
-      } else {
+        elementClicked = true;
+      }
+
+      if (!elementClicked) {
         const selection = window.getSelection();
-        if (selection && selection.rangeCount > 0) {
-          const range = selection.getRangeAt(0);
-          const container = range.startContainer.parentElement?.closest("p, div, span, section, article, main, header, footer, aside, nav") as HTMLElement | null;
-          if (container && editor?.contains(container)) {
-            if (selectedCont && selectedCont !== container) {
-              selectedCont.style.outline = "none";
+        if (selection && selection.rangeCount > 0 && !selection.isCollapsed) {
+            const range = selection.getRangeAt(0);
+            const container = range.startContainer.parentElement?.closest("p, div, span, section, article, main, header, footer, aside, nav") as HTMLElement | null;
+            if (container && editor?.contains(container)) {
+                if (selectedCont !== container) {
+                    deselectAll();
+                }
+                container.style.outline = "2px solid #3b82f6";
+                selectedCont = container;
+                const rect = container.getBoundingClientRect();
+                setSelectedContainer({
+                    element: container,
+                    x: rect.left,
+                    y: rect.top,
+                });
+                elementClicked = true;
             }
-            container.style.outline = "2px solid #3b82f6";
-            selectedCont = container as HTMLElement;
-            const rect = container.getBoundingClientRect();
-            setSelectedContainer({
-              element: container as HTMLElement,
-              x: rect.left,
-              y: rect.top,
-            });
-          }
         }
+      }
+
+      if (!elementClicked) {
+        deselectAll();
       }
     };
 
