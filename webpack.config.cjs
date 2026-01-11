@@ -7,11 +7,12 @@ const common = {
   resolve: {
     extensions: ['.ts', '.tsx', '.js', '.jsx'],
   },
-  externals: {
-    react: 'react',
-    'react-dom': 'react-dom',
-    antd: 'antd',
-  },
+  externals: ({ request }, callback) => {
+  if (['react', 'react-dom', 'antd'].includes(request)) {
+    return callback(null, request);
+  }
+  callback();
+},
   module: {
     rules: [
       {
@@ -84,6 +85,18 @@ module.exports = [
         type: 'commonjs2',
       },
     },
-    plugins: [new MiniCssExtractPlugin({ filename: 'index.css' })],
+    module: {
+      ...common.module,
+      rules: common.module.rules.map((rule) => {
+        if (rule.test.toString().includes('css')) {
+          return {
+            test: rule.test,
+            use: 'ignore-loader',
+          };
+        }
+        return rule;
+      }),
+    },
+    plugins: [],
   },
 ];
