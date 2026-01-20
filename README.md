@@ -37,8 +37,8 @@ Here is an example of how to use the `TextEditor` component in your project:
 
 ```tsx
 import React, { useState, useEffect } from 'react';
-import TextEditor from '@codematic.io/open-cdp-editor';
-import '@codematic.io/open-cdp-editor/dist/index.css';
+import { CDPEditor } from "@codematic.io/cdp-editor";
+import "@codematic.io/cdp-editor/dist/index.css";
 
 function MyEditorComponent() {
   const [initialHTML, setInitialHTML] = useState('');
