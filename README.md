@@ -1,4 +1,4 @@
-# @codematic.io/open-cdp-editor
+# @codematic.io/cdp-editor
 A React rich text editor component designed for openCDP, featuring a robust, extensible toolbar and seamless integration with Ant Design. It includes a sanitization layer using DOMPurify to ensure content security and a flexible modal system, allowing you to fully customize image selection and insertion logic.
 
 ---
@@ -20,7 +20,7 @@ A React rich text editor component designed for openCDP, featuring a robust, ext
 To install the package, run the following command:
 
 ```bash
-npm install @codematic.io/open-cdp-editor
+npm install @codematic.io/cdp-editor
 ```
 
 Ensure that you have the required peer dependencies installed in your project. You can install them together with the editor:
