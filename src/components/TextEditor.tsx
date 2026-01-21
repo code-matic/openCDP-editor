@@ -419,7 +419,7 @@ function TextEditor({ onChange, className, initialValue, imageChildren, exportFu
 
 
   return (
-    <div className="w-fit border-2 border-blue-500 p-3 rounded-lg shadow-lg mx-auto mt-10">
+    <div className="w-fit border-2 border-gray-500 p-3 rounded-lg shadow-lg">
       <div className="flex flex-wrap mb-2 gap-1">
         <ToolbarButton
           active={boldActive}
