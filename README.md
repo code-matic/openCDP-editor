@@ -23,17 +23,17 @@ To install the package, run the following command:
 npm install @codematic.io/open-cdp-editor
 ```
 
-Ensure that you have the required peer dependencies installed in your project:
+Ensure that you have the required peer dependencies installed in your project. You can install them together with the editor:
 
 ```bash
-npm install react react-dom antd
+npm install react react-dom antd@6.2.1
 ```
 
 ---
 
 ## Usage
 
-Here is an example of how to use the `TextEditor` component in your project:
+Here is an example of how to use the `CDPEditor` in your project:
 
 ```tsx
 import React, { useState, useEffect } from 'react';
@@ -75,7 +75,7 @@ function MyEditorComponent() {
     <TextEditor
       initialValue={initialHTML}
       exportFullHTML
-      className="!h-[600px]"
+      className="!h-[600px] !w-[500px]"
       imageChildren={
         <div
           style={{
@@ -114,7 +114,7 @@ export default MyEditorComponent;
 | Prop            | Type                            | Description                                                                                                 |
 |-----------------|---------------------------------|-------------------------------------------------------------------------------------------------------------|
 | `initialValue`  | `string`                        | The initial HTML content to display and edit inside the editor.                                             |
-| `exportFullHTML`| `boolean`                       | If `true`, the editor will export the full HTML document.                                                   |
+| `exportFullHTML`| `boolean`                       | If `true`, the editor will export the full HTML document, if `false` the editor will export the innerHTML                                                   |
 | `onChange`      | `(html: string) => void`        | Callback function that receives the updated HTML content. Returns full HTML if `exportFullHTML` is set.     |
 | `imageChildren` | `React.ReactNode`               | Custom content to render inside the editor, such as a modal for image selection.                            |
 | `className`     | `string`                        | Additional CSS classes to apply to the editor container.                                                    |

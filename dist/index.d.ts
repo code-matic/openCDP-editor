@@ -1,3 +1,4 @@
-import 'antd/dist/antd.css';
+import TextEditor from './components/TextEditor';
 import './index.css';
-//# sourceMappingURL=index.d.ts.map
+export { TextEditor as CDPEditor };
+//# sourceMappingURL=lib.d.ts.map

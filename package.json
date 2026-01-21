@@ -1,10 +1,10 @@
 {
   "name": "@codematic.io/cdp-editor",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "description": "A customizable React rich text editor component built with TailwindCSS and Ant Design, designed for seamless integration into openCDP and modern React applications.",
   "main": "dist/index.cjs",
   "module": "dist/index.js",
-  "types": "dist//lib.d.ts",
+  "types": "dist/lib.d.ts",
   "sideEffects": [
   "*.css",
   "src/index.css"
@@ -52,7 +52,7 @@
   "clean": "rimraf dist",
   "build:js": "webpack --mode production",
   "build:types": "tsc", 
-  "webpack-build": "npm run clean && npm run build:js && npm run build:types"
+  "webpack-build": "npm run clean && npm run build:js && npm run build:types && node scripts/rename-types.js"
 },
   "peerDependencies": {
     "antd": "^6.1.0",
