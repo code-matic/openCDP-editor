@@ -39,9 +39,7 @@ function App() {
   return (
     <div className="w-[550px] mx-auto my-0">
       <TextEditor
-      // initialValue={initialHTML}
       exportFullHTML
-      // readOnly
       // className="!h-[600px]"
       imageChildren={
         <div

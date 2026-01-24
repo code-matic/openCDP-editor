@@ -121,6 +121,34 @@ export default MyEditorComponent;
 
 ---
 
+## New Features
+
+### Read-Only Mode
+- **Description**: The editor now supports a `readOnly` mode.
+- **Behavior**: When `readOnly` is enabled:
+  - The editor becomes non-editable.
+  - An overlay is displayed over the editor to indicate the read-only state.
+
+### Focus and Blur Event Handlers
+- **Props**:
+  - `onFocus`: Triggered when the editor gains focus.
+  - `onBlur`: Triggered when the editor loses focus.
+- **Use Cases**:
+  - Track user interaction with the editor.
+  - Apply custom styles or behaviors based on focus state.
+
+---
+
+## Updated Props
+
+| Prop         | Type                            | Description                                                                                                 |
+|--------------|---------------------------------|-------------------------------------------------------------------------------------------------------------|
+| `readOnly`   | `boolean`                       | If `true`, the editor becomes non-editable, and an overlay is displayed.                                    |
+| `onFocus`    | `(event: FocusEvent) => void`   | Callback triggered when the editor gains focus.                                                            |
+| `onBlur`     | `(event: FocusEvent) => void`   | Callback triggered when the editor loses focus.                                                            |
+
+---
+
 **Note:** The editor does not fetch images or handle image selection logic itself. You must provide your own modal and image grid as children, and handle image insertion in your own code. This makes the editor fully customizable and reusable for any content.
 
 ---
