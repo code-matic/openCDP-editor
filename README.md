@@ -73,7 +73,7 @@ function MyEditorComponent() {
 
   return (
     <TextEditor
-      initialValue={initialHTML}
+      value={initialHTML}
       exportFullHTML
       className="!h-[600px] !w-[500px]"
       imageChildren={
@@ -113,7 +113,7 @@ export default MyEditorComponent;
 
 | Prop            | Type                            | Description                                                                                                 |
 |-----------------|---------------------------------|-------------------------------------------------------------------------------------------------------------|
-| `initialValue`  | `string`                        | The initial HTML content to display and edit inside the editor.                                             |
+| `value`  | `string`                        | The initial HTML content to display and edit inside the editor.                                             |
 | `exportFullHTML`| `boolean`                       | If `true`, the editor will export the full HTML document, if `false` the editor will export the innerHTML                                                   |
 | `onChange`      | `(html: string) => void`        | Callback function that receives the updated HTML content. Returns full HTML if `exportFullHTML` is set.     |
 | `imageChildren` | `React.ReactNode`               | Custom content to render inside the editor, such as a modal for image selection.                            |
@@ -146,6 +146,43 @@ export default MyEditorComponent;
 | `readOnly`   | `boolean`                       | If `true`, the editor becomes non-editable, and an overlay is displayed.                                    |
 | `onFocus`    | `(event: FocusEvent) => void`   | Callback triggered when the editor gains focus.                                                            |
 | `onBlur`     | `(event: FocusEvent) => void`   | Callback triggered when the editor loses focus.                                                            |
+
+---
+
+## Programmatic Text Insertion
+
+The `TextEditor` component also supports programmatic text insertion via the `onInsertText` prop. This allows you to insert text at the current cursor position from outside the editor.
+
+### Example
+
+```tsx
+import React, { useRef } from "react";
+import TextEditor from "@codematic.io/cdp-editor";
+
+function App() {
+  const insertTextRef = useRef<(text: string) => void | null>(null);
+
+  const handleButtonClick = () => {
+    if (insertTextRef.current) {
+      insertTextRef.current("hello"); // Insert "hello" at the cursor position
+    }
+  };
+
+  return (
+    <div>
+      <button onClick={handleButtonClick}>Insert "hello"</button>
+      <TextEditor onInsertText={(fn) => (insertTextRef.current = fn)} />
+    </div>
+  );
+}
+
+export default App;
+```
+
+### Explanation
+
+- **`onInsertText` Prop**: This prop provides a callback function that allows you to programmatically insert text into the editor.
+- **Usage**: Pass a function to `onInsertText` to receive the `insertText` function. You can then call this function to insert text at the current cursor position.
 
 ---
 

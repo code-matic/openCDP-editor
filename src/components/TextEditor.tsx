@@ -25,7 +25,7 @@ import { processInitialValue } from "../lib/processInitialValue";
 interface TextEditorProps {
   onChange?: (html: string) => void;
   className?: string;
-  initialValue?: string;
+  value?: string;
   imageChildren?: React.ReactNode;
   exportFullHTML?: boolean;
   onFocus?: React.FocusEventHandler<HTMLDivElement>;
@@ -33,7 +33,7 @@ interface TextEditorProps {
   readOnly?: boolean;
 }
 
-function TextEditor({ onChange, className, initialValue, imageChildren, exportFullHTML, ...props }: TextEditorProps) {
+function TextEditor({ onChange, className, value, imageChildren, exportFullHTML, ...props }: TextEditorProps) {
   const {
     align,
     boldActive,
@@ -63,15 +63,15 @@ function TextEditor({ onChange, className, initialValue, imageChildren, exportFu
   const savedSelection = useRef<Range | null>(null);
 
 
-  // Set initial HTML content on mount or when initialValue changes
+  // Set initial HTML content on mount or when value changes
   useEffect(() => {
-    if (editorRef.current && initialValue) {
-      const processedContent = processInitialValue(initialValue);
+    if (editorRef.current && value) {
+      const processedContent = processInitialValue(value);
       editorRef.current.innerHTML = sanitizeHTML(processedContent);
     } else if (editorRef.current) {
       editorRef.current.innerHTML = "";
     }
-  }, [initialValue]);
+  }, [value]);
 
 
   // State for modal and input fields
