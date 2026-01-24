@@ -21,15 +21,19 @@ import { sanitizeHTML } from "../lib/SantizeHtml";
 import { getFullHTML } from "../lib/exportHTML";
 import { processInitialValue } from "../lib/processInitialValue";
 
+// Extend TextEditorProps to include onFocus, onBlur, and readOnly
 interface TextEditorProps {
   onChange?: (html: string) => void;
   className?: string;
   initialValue?: string;
   imageChildren?: React.ReactNode;
   exportFullHTML?: boolean;
+  onFocus?: React.FocusEventHandler<HTMLDivElement>;
+  onBlur?: React.FocusEventHandler<HTMLDivElement>;
+  readOnly?: boolean;
 }
 
-function TextEditor({ onChange, className, initialValue, imageChildren, exportFullHTML }: TextEditorProps) {
+function TextEditor({ onChange, className, initialValue, imageChildren, exportFullHTML, ...props }: TextEditorProps) {
   const {
     align,
     boldActive,
@@ -422,7 +426,7 @@ function TextEditor({ onChange, className, initialValue, imageChildren, exportFu
 
 
   return (
-    <div className="w-full border-2 border-gray-300 p-3 rounded-lg shadow-lg">
+    <div className="w-full border-2 border-gray-300 p-3 rounded-lg shadow-lg relative">
       <div className="flex flex-wrap mb-2 gap-1 border-b-2 border-gray-300 pb-2 ">
         <ToolbarButton
           active={boldActive}
@@ -491,14 +495,6 @@ function TextEditor({ onChange, className, initialValue, imageChildren, exportFu
           icon={<AlignRightIcons />}
         />
 
-        {/* <LinkDropdown
-          open={linkDropdownOpen}
-          setOpen={handleOpenLinkDropdown}
-          linkUrl={linkUrl}
-          setLinkUrl={setLinkUrl}
-          insertLink={insertLink}
-        /> */}
-
         <ImageUpload
           children={imageChildren}
           onImageSelect={handleImageSelect}
@@ -556,7 +552,30 @@ function TextEditor({ onChange, className, initialValue, imageChildren, exportFu
         />
 
       </div>
-      <Editor ref={editorRef} className={className} />
+      <Editor
+        ref={editorRef}
+        className={className}
+        onFocus={props.onFocus}
+        onBlur={props.onBlur}
+        contentEditable={!props.readOnly} // Disable editing if readOnly is true
+      />
+      {/* Overlay for readOnly mode */}
+      {props.readOnly && (
+        <div
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            backgroundColor: "rgba(255, 255, 255, 0.7)",
+            border: "2px solid red",
+            zIndex: 10,
+            pointerEvents: "none",
+          }}
+        ></div>
+      )}
+
       {selectedButton && (
         <div
           style={{

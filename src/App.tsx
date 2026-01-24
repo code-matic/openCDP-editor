@@ -41,6 +41,7 @@ function App() {
       <TextEditor
       // initialValue={initialHTML}
       exportFullHTML
+      // readOnly
       // className="!h-[600px]"
       imageChildren={
         <div
