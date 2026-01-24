@@ -147,44 +147,6 @@ export default MyEditorComponent;
 | `onFocus`    | `(event: FocusEvent) => void`   | Callback triggered when the editor gains focus.                                                            |
 | `onBlur`     | `(event: FocusEvent) => void`   | Callback triggered when the editor loses focus.                                                            |
 
----
-
-## Programmatic Text Insertion
-
-The `TextEditor` component also supports programmatic text insertion via the `onInsertText` prop. This allows you to insert text at the current cursor position from outside the editor.
-
-### Example
-
-```tsx
-import React, { useRef } from "react";
-import TextEditor from "@codematic.io/cdp-editor";
-
-function App() {
-  const insertTextRef = useRef<(text: string) => void | null>(null);
-
-  const handleButtonClick = () => {
-    if (insertTextRef.current) {
-      insertTextRef.current("hello"); // Insert "hello" at the cursor position
-    }
-  };
-
-  return (
-    <div>
-      <button onClick={handleButtonClick}>Insert "hello"</button>
-      <TextEditor onInsertText={(fn) => (insertTextRef.current = fn)} />
-    </div>
-  );
-}
-
-export default App;
-```
-
-### Explanation
-
-- **`onInsertText` Prop**: This prop provides a callback function that allows you to programmatically insert text into the editor.
-- **Usage**: Pass a function to `onInsertText` to receive the `insertText` function. You can then call this function to insert text at the current cursor position.
-
----
 
 **Note:** The editor does not fetch images or handle image selection logic itself. You must provide your own modal and image grid as children, and handle image insertion in your own code. This makes the editor fully customizable and reusable for any content.
 
