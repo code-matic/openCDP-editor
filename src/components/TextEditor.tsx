@@ -245,19 +245,22 @@ function TextEditor({ onChange, className, initialValue, imageChildren, exportFu
     };
   }, []);
 
+  // Modify the exec function to toggle heading formats
   const exec = (command: string, value?: string) => {
-
     const selection = window.getSelection();
     const isCollapsed = selection && selection.isCollapsed;
     const isFormatCmd =
       command === "bold" || command === "italic" || command === "underline";
+    const isHeadingCmd = command === "formatBlock" && (value === "H1" || value === "H2" || value === "H3");
 
-    if (
-      isFormatCmd &&
-      isCollapsed &&
-      editorRef.current &&
-      document.activeElement === editorRef.current
-    ) {
+    if (isHeadingCmd && editorRef.current) {
+      // Check if the current format matches the clicked heading
+      if (formatBlock === value) {
+        document.execCommand("formatBlock", false, "P"); // Remove heading by setting it to a paragraph
+      } else {
+        document.execCommand(command, false, value); // Apply the heading
+      }
+    } else if (isFormatCmd && isCollapsed && editorRef.current && document.activeElement === editorRef.current) {
       document.execCommand(command, false, value);
       document.execCommand("insertHTML", false, "<span>\u200B</span>");
       const range = document.createRange();
@@ -268,13 +271,10 @@ function TextEditor({ onChange, className, initialValue, imageChildren, exportFu
         selection?.removeAllRanges();
         selection?.addRange(range);
       }
-
-      // Update the bold state after executing the command
-      // handleSelectionChange();
     } else {
       document.execCommand(command, false, value);
-      // handleSelectionChange();
     }
+
     editorRef.current?.focus();
   };
 
@@ -389,38 +389,41 @@ function TextEditor({ onChange, className, initialValue, imageChildren, exportFu
     setSelectedContainer
   );
 
+  // Adjust dropdown positioning logic
   useEffect(() => {
     if (selectedButton) {
+      const rect = selectedButton.element.getBoundingClientRect();
       setButtonMenuPos({
-        top: selectedButton.y + 10, // Adjust dropdown position
-        left: selectedButton.x + 10,
+        top: rect.bottom + window.scrollY, // Position relative to viewport
+        left: rect.left + window.scrollX,
       });
     }
   }, [selectedButton]);
 
-
   useEffect(() => {
     if (selectedImage) {
+      const rect = selectedImage.element.getBoundingClientRect();
       setImageMenuPos({
-        top: selectedImage.y + 10,
-        left: selectedImage.x + 10,
+        top: rect.bottom + window.scrollY, // Position relative to viewport
+        left: rect.left + window.scrollX,
       });
     }
   }, [selectedImage]);
 
   useEffect(() => {
     if (selectedContainer) {
+      const rect = selectedContainer.element.getBoundingClientRect();
       setContainerMenuPos({
-        top: selectedContainer.y + 30,
-        left: selectedContainer.x + 10,
+        top: rect.bottom + window.scrollY, // Position relative to viewport
+        left: rect.left + window.scrollX,
       });
     }
   }, [selectedContainer]);
 
 
   return (
-    <div className="w-fit border-2 border-gray-500 p-3 rounded-lg shadow-lg">
-      <div className="flex flex-wrap mb-2 gap-1">
+    <div className="w-full border-2 border-gray-300 p-3 rounded-lg shadow-lg">
+      <div className="flex flex-wrap mb-2 gap-1 border-b-2 border-gray-300 pb-2 ">
         <ToolbarButton
           active={boldActive}
           onClick={() => exec("bold")}

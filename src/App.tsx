@@ -37,10 +37,11 @@ function App() {
   };
 
   return (
-    <TextEditor
-      initialValue={initialHTML}
+    <div className="w-[550px] mx-auto my-0">
+      <TextEditor
+      // initialValue={initialHTML}
       exportFullHTML
-      className="!h-[600px]"
+      // className="!h-[600px]"
       imageChildren={
         <div
           style={{
@@ -66,6 +67,8 @@ function App() {
       }
       onChange={handleEditorChange}
     />
+    </div>
+    
   );
 }
 

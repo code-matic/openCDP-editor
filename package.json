@@ -48,11 +48,12 @@
   },
 "scripts": {
   "start": "react-scripts start",
-    "build": "react-scripts build",
+  "build": "react-scripts build",
   "clean": "rimraf dist",
   "build:js": "webpack --mode production",
   "build:types": "tsc", 
-  "webpack-build": "npm run clean && npm run build:js && npm run build:types && node scripts/rename-types.js"
+  "webpack-build": "npm run clean && npm run build:js && npm run build:types && node scripts/rename-types.js",
+  "prod": "npm run webpack-build && npm pack" 
 },
   "peerDependencies": {
     "antd": "^6.1.0",
