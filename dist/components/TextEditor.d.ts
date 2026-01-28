@@ -1,16 +1,18 @@
 import React from "react";
 interface TextEditorProps {
-    value?: string;
     onChange?: (html: string) => void;
     className?: string;
-    initialValue?: string;
+    value?: string;
     imageChildren?: React.ReactNode;
     exportFullHTML?: boolean;
     onFocus?: React.FocusEventHandler<HTMLDivElement>;
     onBlur?: React.FocusEventHandler<HTMLDivElement>;
     readOnly?: boolean;
-    onInsertText?: (insertFn: (text: string) => void) => void;
+    pasteText?: {
+        text: string;
+        key: number;
+    };
 }
-declare function TextEditor({ value, onChange, className, initialValue, imageChildren, exportFullHTML, onInsertText, ...props }: TextEditorProps): import("react/jsx-runtime").JSX.Element;
+declare function TextEditor({ onChange, className, value, imageChildren, exportFullHTML, ...props }: TextEditorProps): import("react/jsx-runtime").JSX.Element;
 export default TextEditor;
 //# sourceMappingURL=TextEditor.d.ts.map

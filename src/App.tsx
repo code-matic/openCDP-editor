@@ -5,16 +5,8 @@ import { useEffect, useState } from "react";
 
 
 function App() {
-  const [initialHTML, setInitialHTML] = useState("");
   const [images, setImages] = useState<string[]>([]);
-
-
-  useEffect(() => {
-    fetch("http://localhost:3000/code-matic/openCDP-editor/hey.html")
-      .then((res) => res.text())
-      .then(setInitialHTML);
-  }, []);
-
+  const [textToPaste, setTextToPaste] = useState({ text: "", key: 0 });
 
   useEffect(() => {
     const storedImages = localStorage.getItem("imageList");
@@ -36,38 +28,43 @@ function App() {
     console.log("Editor output:", value);
   };
 
+  const handlePasteButtonClick = () => {
+    setTextToPaste({ text: "This is the text to paste!", key: Date.now() });
+  };
+
   return (
     <div className="w-[550px] mx-auto my-0">
+      <button onClick={handlePasteButtonClick} style={{ marginBottom: "10px" }}>
+        Paste Text
+      </button>
       <TextEditor
-      // value={initialHTML}
-      exportFullHTML
-      // readOnly
-      // className="!h-[600px]"
-      imageChildren={
-        <div
-          style={{
-            display: "flex",
-            flexWrap: "wrap",
-            gap: "10px",
-          }}
-        >
-          {images.map((src, index) => (
-            <img
-              key={index}
-              src={src}
-              alt={`img-${index}`}
-              style={{
-                width: "100px",
-                height: "100px",
-                objectFit: "cover",
-                cursor: "pointer",
-              }}
-            />
-          ))}
-        </div>
-      }
-      onChange={handleEditorChange}
-    />
+        exportFullHTML
+        pasteText={textToPaste}
+        imageChildren={
+          <div
+            style={{
+              display: "flex",
+              flexWrap: "wrap",
+              gap: "10px",
+            }}
+          >
+            {images.map((src, index) => (
+              <img
+                key={index}
+                src={src}
+                alt={`img-${index}`}
+                style={{
+                  width: "100px",
+                  height: "100px",
+                  objectFit: "cover",
+                  cursor: "pointer",
+                }}
+              />
+            ))}
+          </div>
+        }
+        onChange={handleEditorChange}
+      />
     </div>
     
   );

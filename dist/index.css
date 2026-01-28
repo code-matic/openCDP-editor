@@ -578,9 +578,6 @@ video {
 .flex {
   display: flex;
 }
-.\!h-\[600px\] {
-  height: 600px !important;
-}
 .h-\[400px\] {
   height: 400px;
 }

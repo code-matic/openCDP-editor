@@ -31,6 +31,7 @@ interface TextEditorProps {
   onFocus?: React.FocusEventHandler<HTMLDivElement>;
   onBlur?: React.FocusEventHandler<HTMLDivElement>;
   readOnly?: boolean;
+  pasteText?: { text: string; key: number }; // New prop to accept text to paste
 }
 
 function TextEditor({ onChange, className, value, imageChildren, exportFullHTML, ...props }: TextEditorProps) {
@@ -424,6 +425,44 @@ function TextEditor({ onChange, className, value, imageChildren, exportFullHTML,
     }
   }, [selectedContainer]);
 
+
+  // Function to paste text into the editor
+  const pasteText = (text: string) => {
+    if (editorRef.current) {
+      editorRef.current.focus();
+      const selection = window.getSelection();
+      if (selection && selection.rangeCount > 0) {
+        const range = selection.getRangeAt(0);
+        range.deleteContents();
+        range.insertNode(document.createTextNode(text));
+        range.collapse(false);
+        if (onChange) {
+          const editorContent = editorRef.current.innerHTML;
+          if (exportFullHTML) {
+            onChange(getFullHTML(editorContent));
+          } else {
+            onChange(editorContent);
+          }
+        }
+      } else {
+        editorRef.current.appendChild(document.createTextNode(text));
+        if (onChange) {
+          const editorContent = editorRef.current.innerHTML;
+          if (exportFullHTML) {
+            onChange(getFullHTML(editorContent));
+          } else {
+            onChange(editorContent);
+          }
+        }
+      }
+    }
+  };
+
+  useEffect(() => {
+    if (props.pasteText) {
+      pasteText(props.pasteText.text);
+    }
+  }, [props.pasteText]);
 
   return (
     <div className="w-full border-2 border-gray-300 p-3 rounded-lg shadow-lg relative">

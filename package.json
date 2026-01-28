@@ -1,6 +1,6 @@
 {
   "name": "@codematic.io/cdp-editor",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "description": "A customizable React rich text editor component built with TailwindCSS and Ant Design, designed for seamless integration into openCDP and modern React applications.",
   "main": "dist/index.cjs",
   "module": "dist/index.js",
