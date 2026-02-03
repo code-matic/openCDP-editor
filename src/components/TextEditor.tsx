@@ -31,7 +31,7 @@ interface TextEditorProps {
   onFocus?: React.FocusEventHandler<HTMLDivElement>;
   onBlur?: React.FocusEventHandler<HTMLDivElement>;
   readOnly?: boolean;
-  pasteText?: { text: string; key: number }; // New prop to accept text to paste
+  pasteText?: { text: string; key: number };
 }
 
 function TextEditor({ onChange, className, value, imageChildren, exportFullHTML, ...props }: TextEditorProps) {
@@ -62,6 +62,8 @@ function TextEditor({ onChange, className, value, imageChildren, exportFullHTML,
   } | null>(null);
   const editorRef = useRef<HTMLDivElement>(null);
   const savedSelection = useRef<Range | null>(null);
+  const isFocusedRef = useRef(false);
+  const lastHtmlRef = useRef<string>("");
 
 
   // Set initial HTML content on mount or when value changes
@@ -73,6 +75,21 @@ function TextEditor({ onChange, className, value, imageChildren, exportFullHTML,
       editorRef.current.innerHTML = "";
     }
   }, [value]);
+
+
+  const handleFocus = (e: React.FocusEvent<HTMLDivElement>) => {
+    isFocusedRef.current = true;
+    if (props.onFocus) {
+      props.onFocus(e);
+    }
+  };
+
+  const handleBlur = (e: React.FocusEvent<HTMLDivElement>) => {
+    isFocusedRef.current = false;
+    if (props.onBlur) {
+      props.onBlur(e);
+    }
+  };
 
 
   // State for modal and input fields
@@ -151,7 +168,6 @@ function TextEditor({ onChange, className, value, imageChildren, exportFullHTML,
       const html = `<a href="${buttonUrl}" target="_blank" rel="noopener noreferrer" style="text-decoration: none !important;">${buttonLabel}</a>`;
       document.execCommand("insertHTML", false, html);
       editorRef.current.focus();
-      // handleSelectionChange();
     }
     setButtonModalOpen(false);
     savedSelection.current = null;
@@ -172,13 +188,38 @@ function TextEditor({ onChange, className, value, imageChildren, exportFullHTML,
     // We can add logic here to update UI based on text selection if needed
   };
 
+  // Sync initial value and value prop updates
+  useEffect(() => {
+    if (editorRef.current && value !== undefined) {
+      const processedContent = processInitialValue(value);
+      const sanitized = sanitizeHTML(processedContent);
+
+      // Only update DOM if it's different to prevent cursor jumps and loops
+      if (editorRef.current.innerHTML !== sanitized) {
+        editorRef.current.innerHTML = sanitized;
+        // Sync the comparison ref immediately so the handleInput listener
+        // sees the content as "already known"
+        lastHtmlRef.current = sanitized;
+      }
+    }
+  }, [value]);
+
   useEffect(() => {
     const editor = editorRef.current;
     if (!editor) return;
 
     const handleInput = () => {
-      if (onChange) {
-        const editorContent = editor.innerHTML;
+      const editorContent = editor.innerHTML;
+
+      // GATEKEEPER: Only fire if content actually changed 
+      // and the editor is focused (prevents ghost triggers from outside buttons)
+      if (
+        onChange &&
+        isFocusedRef.current &&
+        editorContent !== lastHtmlRef.current
+      ) {
+        lastHtmlRef.current = editorContent; // Sync the ref
+
         if (exportFullHTML) {
           onChange(getFullHTML(editorContent));
         } else {
@@ -351,22 +392,22 @@ function TextEditor({ onChange, className, value, imageChildren, exportFullHTML,
       if (!elementClicked) {
         const selection = window.getSelection();
         if (selection && selection.rangeCount > 0 && !selection.isCollapsed) {
-            const range = selection.getRangeAt(0);
-            const container = range.startContainer.parentElement?.closest("p, div, span, section, article, main, header, footer, aside, nav") as HTMLElement | null;
-            if (container && editor?.contains(container)) {
-                if (selectedCont !== container) {
-                    deselectAll();
-                }
-                container.style.outline = "2px solid #3b82f6";
-                selectedCont = container;
-                const rect = container.getBoundingClientRect();
-                setSelectedContainer({
-                    element: container,
-                    x: rect.left,
-                    y: rect.top,
-                });
-                elementClicked = true;
+          const range = selection.getRangeAt(0);
+          const container = range.startContainer.parentElement?.closest("p, div, span, section, article, main, header, footer, aside, nav") as HTMLElement | null;
+          if (container && editor?.contains(container)) {
+            if (selectedCont !== container) {
+              deselectAll();
             }
+            container.style.outline = "2px solid #3b82f6";
+            selectedCont = container;
+            const rect = container.getBoundingClientRect();
+            setSelectedContainer({
+              element: container,
+              x: rect.left,
+              y: rect.top,
+            });
+            elementClicked = true;
+          }
         }
       }
 
@@ -594,8 +635,8 @@ function TextEditor({ onChange, className, value, imageChildren, exportFullHTML,
       <Editor
         ref={editorRef}
         className={className}
-        onFocus={props.onFocus}
-        onBlur={props.onBlur}
+        onFocus={handleFocus}
+        onBlur={handleBlur}
         contentEditable={!props.readOnly} // Disable editing if readOnly is true
       />
       {/* Overlay for readOnly mode */}
