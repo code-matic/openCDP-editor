@@ -21,19 +21,15 @@ import { sanitizeHTML } from "../lib/SantizeHtml";
 import { getFullHTML } from "../lib/exportHTML";
 import { processInitialValue } from "../lib/processInitialValue";
 
-// Extend TextEditorProps to include onFocus, onBlur, and readOnly
 interface TextEditorProps {
   onChange?: (html: string) => void;
   className?: string;
-  value?: string;
+  initialValue?: string;
   imageChildren?: React.ReactNode;
   exportFullHTML?: boolean;
-  onFocus?: React.FocusEventHandler<HTMLDivElement>;
-  onBlur?: React.FocusEventHandler<HTMLDivElement>;
-  readOnly?: boolean;
 }
 
-function TextEditor({ onChange, className, value, imageChildren, exportFullHTML, ...props }: TextEditorProps) {
+function TextEditor({ onChange, className, initialValue, imageChildren, exportFullHTML }: TextEditorProps) {
   const {
     align,
     boldActive,
@@ -63,15 +59,15 @@ function TextEditor({ onChange, className, value, imageChildren, exportFullHTML,
   const savedSelection = useRef<Range | null>(null);
 
 
-  // Set initial HTML content on mount or when value changes
+  // Set initial HTML content on mount or when initialValue changes
   useEffect(() => {
-    if (editorRef.current && value) {
-      const processedContent = processInitialValue(value);
+    if (editorRef.current && initialValue) {
+      const processedContent = processInitialValue(initialValue);
       editorRef.current.innerHTML = sanitizeHTML(processedContent);
     } else if (editorRef.current) {
       editorRef.current.innerHTML = "";
     }
-  }, [value]);
+  }, [initialValue]);
 
 
   // State for modal and input fields
@@ -150,7 +146,6 @@ function TextEditor({ onChange, className, value, imageChildren, exportFullHTML,
       const html = `<a href="${buttonUrl}" target="_blank" rel="noopener noreferrer" style="text-decoration: none !important;">${buttonLabel}</a>`;
       document.execCommand("insertHTML", false, html);
       editorRef.current.focus();
-      // handleSelectionChange();
     }
     setButtonModalOpen(false);
     savedSelection.current = null;
@@ -249,22 +244,19 @@ function TextEditor({ onChange, className, value, imageChildren, exportFullHTML,
     };
   }, []);
 
-  // Modify the exec function to toggle heading formats
   const exec = (command: string, value?: string) => {
+
     const selection = window.getSelection();
     const isCollapsed = selection && selection.isCollapsed;
     const isFormatCmd =
       command === "bold" || command === "italic" || command === "underline";
-    const isHeadingCmd = command === "formatBlock" && (value === "H1" || value === "H2" || value === "H3");
 
-    if (isHeadingCmd && editorRef.current) {
-      // Check if the current format matches the clicked heading
-      if (formatBlock === value) {
-        document.execCommand("formatBlock", false, "P"); // Remove heading by setting it to a paragraph
-      } else {
-        document.execCommand(command, false, value); // Apply the heading
-      }
-    } else if (isFormatCmd && isCollapsed && editorRef.current && document.activeElement === editorRef.current) {
+    if (
+      isFormatCmd &&
+      isCollapsed &&
+      editorRef.current &&
+      document.activeElement === editorRef.current
+    ) {
       document.execCommand(command, false, value);
       document.execCommand("insertHTML", false, "<span>\u200B</span>");
       const range = document.createRange();
@@ -275,10 +267,12 @@ function TextEditor({ onChange, className, value, imageChildren, exportFullHTML,
         selection?.removeAllRanges();
         selection?.addRange(range);
       }
+
+      // Update the bold state after executing the command
+      // handleSelectionChange();
     } else {
       document.execCommand(command, false, value);
     }
-
     editorRef.current?.focus();
   };
 
@@ -393,41 +387,38 @@ function TextEditor({ onChange, className, value, imageChildren, exportFullHTML,
     setSelectedContainer
   );
 
-  // Adjust dropdown positioning logic
   useEffect(() => {
     if (selectedButton) {
-      const rect = selectedButton.element.getBoundingClientRect();
       setButtonMenuPos({
-        top: rect.bottom + window.scrollY, // Position relative to viewport
-        left: rect.left + window.scrollX,
+        top: selectedButton.y + 10, // Adjust dropdown position
+        left: selectedButton.x + 10,
       });
     }
   }, [selectedButton]);
 
+
   useEffect(() => {
     if (selectedImage) {
-      const rect = selectedImage.element.getBoundingClientRect();
       setImageMenuPos({
-        top: rect.bottom + window.scrollY, // Position relative to viewport
-        left: rect.left + window.scrollX,
+        top: selectedImage.y + 10,
+        left: selectedImage.x + 10,
       });
     }
   }, [selectedImage]);
 
   useEffect(() => {
     if (selectedContainer) {
-      const rect = selectedContainer.element.getBoundingClientRect();
       setContainerMenuPos({
-        top: rect.bottom + window.scrollY, // Position relative to viewport
-        left: rect.left + window.scrollX,
+        top: selectedContainer.y + 30,
+        left: selectedContainer.x + 10,
       });
     }
   }, [selectedContainer]);
 
 
   return (
-    <div className="w-full border-2 border-gray-300 p-3 rounded-lg shadow-lg relative">
-      <div className="flex flex-wrap mb-2 gap-1 border-b-2 border-gray-300 pb-2 ">
+    <div className="w-fit border-2 border-gray-500 p-3 rounded-lg shadow-lg">
+      <div className="flex flex-wrap mb-2 gap-1">
         <ToolbarButton
           active={boldActive}
           onClick={() => exec("bold")}
@@ -552,30 +543,7 @@ function TextEditor({ onChange, className, value, imageChildren, exportFullHTML,
         />
 
       </div>
-      <Editor
-        ref={editorRef}
-        className={className}
-        onFocus={props.onFocus}
-        onBlur={props.onBlur}
-        contentEditable={!props.readOnly} // Disable editing if readOnly is true
-      />
-      {/* Overlay for readOnly mode */}
-      {props.readOnly && (
-        <div
-          style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            width: "100%",
-            height: "100%",
-            backgroundColor: "rgba(255, 255, 255, 0.7)",
-            border: "2px solid red",
-            zIndex: 10,
-            pointerEvents: "none",
-          }}
-        ></div>
-      )}
-
+      <Editor ref={editorRef} className={className} />
       {selectedButton && (
         <div
           style={{

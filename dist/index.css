@@ -578,9 +578,6 @@ video {
 .flex {
   display: flex;
 }
-.\!h-\[600px\] {
-  height: 600px !important;
-}
 .h-\[400px\] {
   height: 400px;
 }
@@ -648,12 +645,13 @@ video {
 .border-2 {
   border-width: 2px;
 }
-.border-b-2 {
-  border-bottom-width: 2px;
-}
 .border-gray-300 {
   --tw-border-opacity: 1;
   border-color: rgb(209 213 219 / var(--tw-border-opacity, 1));
+}
+.border-gray-500 {
+  --tw-border-opacity: 1;
+  border-color: rgb(107 114 128 / var(--tw-border-opacity, 1));
 }
 .bg-\[\#00000062\] {
   background-color: #00000062;
@@ -686,9 +684,6 @@ video {
 .py-1 {
   padding-top: 0.25rem;
   padding-bottom: 0.25rem;
-}
-.pb-2 {
-  padding-bottom: 0.5rem;
 }
 .italic {
   font-style: italic;
