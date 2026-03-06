@@ -414,7 +414,6 @@ if (errors.length > 0) {
 ```bash
 # Clone the repo
 git clone https://github.com/code-matic/openCDP-editor
-cd cdp/email-editor-pkg
 
 # Install dependencies
 npm install
