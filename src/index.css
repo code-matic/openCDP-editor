@@ -2,93 +2,39 @@
 @tailwind components;
 @tailwind utilities;
 
-
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+/* Override rsw editor styles to fill available height */
+.rsw-editor {
+  height: 100% !important;
+  display: flex;
+  flex-direction: column;
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+.rsw-ce {
+  flex: 1 !important;
+  min-height: 300px;
+  overflow-y: auto;
+  font-family: system-ui, sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+  padding: 12px;
 }
 
-[contenteditable] ul {
-  list-style-type: disc;
-  padding-left: 1.5rem;
+/* rsw renders an empty <Toolbar> when toolbarContent=null — hide it */
+.rsw-toolbar {
+  display: none !important;
 }
 
-[contenteditable] ol {
-  list-style-type: decimal;
-  padding-left: 1.5rem;
+/* Hide scrollbar on the unified toolbar row while keeping it scrollable */
+.toolbar-scroll::-webkit-scrollbar {
+  display: none;
 }
 
-[contenteditable] h1 {
-  @apply text-3xl font-bold mb-2;
+/* Toolbar button shared style */
+.toolbar-btn {
+  @apply p-1.5 rounded border border-gray-300 hover:bg-gray-100 flex items-center justify-center transition-colors;
 }
 
-[contenteditable] h2 {
-  @apply text-2xl font-semibold mb-2;
-}
-
-[contenteditable] h3 {
-  @apply text-xl font-medium mb-2;
-}
-
-/* Style paragraphs */
-[contenteditable] p {
-  @apply mb-2 leading-relaxed;
-}
-
-/* Links */
-[contenteditable] a {
-  @apply text-blue-600 underline hover:text-blue-800;
-}
-
-a{
-  text-decoration: none I !important;
-}
-
-
-.loader {
-  width: 50px;
-  aspect-ratio: 1;
-  display: grid;
-  -webkit-mask: conic-gradient(from 15deg, #0000, #000);
-  animation: l26 1s infinite steps(12);
-}
-
-.loader,
-.loader:before,
-.loader:after {
-  background:
-    radial-gradient(closest-side at 50% 12.5%,
-      #2053D4 96%, #0000) 50% 0/20% 80% repeat-y,
-    radial-gradient(closest-side at 12.5% 50%,
-      #2053D4 96%, #0000) 0 50%/80% 20% repeat-x;
-}
-
-.loader:before,
-.loader:after {
-  content: "";
-  grid-area: 1/1;
-  transform: rotate(30deg);
-}
-
-.loader:after {
-  transform: rotate(60deg);
-}
-
-@keyframes l26 {
-  100% {
-    transform: rotate(1turn)
-  }
-}
-
-.open-cdp-editor img:hover {
-  cursor: pointer;
+/* Custom ANT color picker panel */
+.custom-panel .ant-color-picker-inner {
+  padding: 8px;
 }
