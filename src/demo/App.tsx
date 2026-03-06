@@ -1,5 +1,5 @@
 import React, { useRef, useState } from "react";
-import { Toaster } from "sonner";
+import { toast, Toaster } from "sonner";
 import { CDPEditor } from "../lib/components/EmailEditor";
 import type { CDPEditorHandle, ImageAsset } from "../lib/types";
 
@@ -34,13 +34,13 @@ const INITIAL_HTML = `<!DOCTYPE html>
 // ── Sample attributes ─────────────────────────────────────────────────────────
 
 const DEMO_ATTRIBUTES = [
-  { label: "First Name",   value: "{{ customer.first_name }}" },
-  { label: "Last Name",    value: "{{ customer.last_name }}" },
-  { label: "Email",        value: "{{ customer.email }}" },
-  { label: "Order ID",     value: "{{ event.order_id }}" },
-  { label: "Amount",       value: "{{ event.amount }}" },
+  { label: "First Name", value: "{{ customer.first_name }}" },
+  { label: "Last Name", value: "{{ customer.last_name }}" },
+  { label: "Email", value: "{{ customer.email }}" },
+  { label: "Order ID", value: "{{ event.order_id }}" },
+  { label: "Amount", value: "{{ event.amount }}" },
   { label: "Product Name", value: "{{ event.product_name }}" },
-  { label: "Unsubscribe",  value: "{{ unsubscribe_url }}" },
+  { label: "Unsubscribe", value: "{{ unsubscribe_url }}" },
 ];
 
 // ── Sample image library ──────────────────────────────────────────────────────
@@ -69,14 +69,14 @@ const DEMO_IMAGES: ImageAsset[] = [
 // ── Feature list ──────────────────────────────────────────────────────────────
 
 const FEATURES = [
-  { icon: "✍️", label: "Rich text editing",  desc: "Bold, italic, lists, headings" },
-  { icon: "🖼️", label: "Image management",   desc: "Insert, replace, resize, align" },
-  { icon: "🔘", label: "Button builder",      desc: "Insert styled CTA buttons" },
-  { icon: "🎨", label: "Colours & fonts",     desc: "Full colour picker + font families" },
-  { icon: "↔️", label: "Text alignment",      desc: "Left, center, right" },
-  { icon: "📐", label: "HTML / Monaco view",  desc: "Edit raw HTML with syntax highlight" },
-  { icon: "📦", label: "Inline CSS",          desc: "Inline <style> tags for email clients" },
-  { icon: "📱", label: "Phone preview",       desc: "See how it looks on mobile" },
+  { icon: "✍️", label: "Rich text editing", desc: "Bold, italic, lists, headings" },
+  { icon: "🖼️", label: "Image management", desc: "Insert, replace, resize, align" },
+  { icon: "🔘", label: "Button builder", desc: "Insert styled CTA buttons" },
+  { icon: "🎨", label: "Colours & fonts", desc: "Full colour picker + font families" },
+  { icon: "↔️", label: "Text alignment", desc: "Left, center, right" },
+  { icon: "📐", label: "HTML / Monaco view", desc: "Edit raw HTML with syntax highlight" },
+  { icon: "📦", label: "Inline CSS", desc: "Inline <style> tags for email clients" },
+  { icon: "📱", label: "Phone preview", desc: "See how it looks on mobile" },
 ];
 
 // ── Light blue theme tokens ───────────────────────────────────────────────────
@@ -248,7 +248,7 @@ export default function App() {
                 className="text-xs px-1.5 py-0.5 rounded font-medium hidden sm:inline"
                 style={{ background: "rgba(2,132,199,0.12)", color: theme.textSecondary }}
               >
-                v0.1.0
+                v{__APP_VERSION__}
               </span>
             </div>
           </div>
@@ -333,7 +333,7 @@ export default function App() {
             className="font-extrabold tracking-tight mb-3 sm:mb-4"
             style={{ fontSize: "clamp(1.75rem, 5vw, 3rem)", lineHeight: 1.1, color: theme.textPrimary }}
           >
-            HTML Email Editor
+            CDP Editor
           </h1>
 
           <p
@@ -374,34 +374,10 @@ export default function App() {
           {/* Editor + output */}
           <div className="flex-1 min-w-0">
 
-            {/* Editor with light blue shadow — explicit height so Monaco/code view has a defined container */}
-            <div
-              className="rounded-xl overflow-hidden flex flex-col"
-              style={{
-                boxShadow: `0 0 0 1px ${theme.border}, 0 24px 64px rgba(2,132,199,0.15)`,
-                height: 540,
-                minHeight: 540,
-              }}
-            >
-              <CDPEditor
-                ref={editorRef}
-                value={html}
-                onChange={setHtml}
-                readOnly={readOnly}
-                placeholder="Start typing your email content here…"
-                height={480}
-                onFetchImages={handleFetchImages}
-                onUploadImage={handleUploadImage}
-                onDeleteImage={handleDeleteImage}
-                enablePreview
-                enableCodeEditor
-              />
-            </div>
-
             {/* HTML output */}
             {showOutput && (
               <div
-                className="mt-4 sm:mt-5 rounded-xl overflow-hidden"
+                className="mt-4 sm:mt-5 rounded-xl overflow-hidden mb-10"
                 style={{ border: `1px solid ${theme.border}` }}
               >
                 <div
@@ -414,9 +390,31 @@ export default function App() {
                   <span className="text-xs font-semibold" style={{ color: theme.textMuted }}>
                     HTML Output
                   </span>
-                  <span className="text-xs" style={{ color: theme.textMuted }}>
-                    {html.length} chars
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs" style={{ color: theme.textMuted }}>
+                      {html.length} chars
+                    </span>
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText(html).then(() => {
+                          toast.success("Copied to clipboard");
+                        });
+                      }}
+                      className="flex items-center gap-1 text-xs px-2 py-0.5 rounded transition-opacity hover:opacity-70"
+                      style={{
+                        background: "rgba(2,132,199,0.1)",
+                        color: theme.textSecondary,
+                        border: `1px solid rgba(2,132,199,0.2)`,
+                      }}
+                      title="Copy HTML"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <rect width="14" height="14" x="8" y="8" rx="2" ry="2"/>
+                        <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>
+                      </svg>
+                      Copy
+                    </button>
+                  </div>
                 </div>
                 <pre
                   className="text-xs p-4 overflow-auto max-h-52 sm:max-h-60 font-mono whitespace-pre-wrap"
@@ -426,6 +424,32 @@ export default function App() {
                 </pre>
               </div>
             )}
+
+            {/* Editor with light blue shadow — explicit height so Monaco/code view has a defined container */}
+            <div
+              className="rounded-xl overflow-hidden flex flex-col"
+              style={{
+                boxShadow: `0 0 0 1px ${theme.border}, 0 24px 64px rgba(2,132,199,0.15)`,
+                height: "fit-content",
+                // minHeight: "100%",
+              }}
+            >
+              <CDPEditor
+                ref={editorRef}
+                value={html}
+                onChange={setHtml}
+                readOnly={readOnly}
+                placeholder="Start typing your email content here…"
+                height={680}
+                onFetchImages={handleFetchImages}
+                onUploadImage={handleUploadImage}
+                onDeleteImage={handleDeleteImage}
+                enablePreview
+                enableCodeEditor
+              />
+            </div>
+
+
 
             {/* Feature grid */}
             <div className="mt-5 sm:mt-6 grid grid-cols-2 sm:grid-cols-4 gap-3">

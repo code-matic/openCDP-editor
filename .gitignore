@@ -3,3 +3,7 @@
 
 # npm package files
 *.tgz
+
+# build outputs
+/dist
+/dist-app
