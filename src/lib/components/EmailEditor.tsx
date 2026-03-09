@@ -20,6 +20,7 @@ import {
   createFontMenu,
   createMenuConfig,
   createButtonMenuConfig,
+  createLinkMenuConfig,
 } from "../utils/editorMenuUtils";
 import {
   changeHighlightColor,
@@ -261,6 +262,12 @@ const CDPEditorInner = (
 
   const [showImageModal, setShowImageModal] = useState(false);
   const [showButtonModal, setShowButtonModal] = useState(false);
+  const [showLinkModal, setShowLinkModal] = useState(false);
+  const [showLinkEditModal, setShowLinkEditModal] = useState(false);
+  const [linkSelection, setLinkSelection] = useState<Range | null>(null);
+  const [selectedLink, setSelectedLink] = useState<{ element: HTMLAnchorElement; x: number; y: number } | null>(null);
+  const [linkMenuPos, setLinkMenuPos] = useState({ top: 0, left: 0 });
+  const [editingLink, setEditingLink] = useState<HTMLAnchorElement | null>(null);
   const [editingButton, setEditingButton] = useState<HTMLAnchorElement | null>(null);
   const [imageToReplace, setImageToReplace] = useState<HTMLImageElement | null>(null);
 
@@ -320,23 +327,40 @@ const CDPEditorInner = (
     return () => document.removeEventListener("click", onDocClick);
   }, []);
 
-  // ── Button click handler ─────────────────────────────────────────────────
+  // ── Button / Link click handler ──────────────────────────────────────────
   useEffect(() => {
     let activeBtn: HTMLAnchorElement | null = null;
+    let activeLink: HTMLAnchorElement | null = null;
     const onDocClick = (e: MouseEvent) => {
       const target = e.target as HTMLElement | null;
       if (!target) return;
-      const btn = target.closest(".rsw-editor .rsw-ce a") as HTMLAnchorElement | null;
+      const anchor = target.closest(".rsw-editor .rsw-ce a") as HTMLAnchorElement | null;
       const editorEl = document.querySelector(".rsw-editor .rsw-ce");
-      if (btn && editorEl?.contains(btn)) {
-        e.preventDefault(); // Prevent default link navigation
-        if (activeBtn && activeBtn !== btn) activeBtn.style.outline = "none";
-        btn.style.outline = "2px solid #4f46e5";
-        activeBtn = btn;
-        setSelectedButton({ element: btn, x: e.clientX, y: e.clientY });
+      if (anchor && editorEl?.contains(anchor)) {
+        e.preventDefault();
+        const isButton =
+          !!anchor.closest("[data-editor-button-wrapper='true']") ||
+          (!!anchor.style.backgroundColor && !!anchor.style.padding);
+        if (isButton) {
+          if (activeLink) { activeLink.style.outline = "none"; activeLink = null; }
+          setSelectedLink(null);
+          if (activeBtn && activeBtn !== anchor) activeBtn.style.outline = "none";
+          anchor.style.outline = "2px solid #4f46e5";
+          activeBtn = anchor;
+          setSelectedButton({ element: anchor, x: e.clientX, y: e.clientY });
+        } else {
+          if (activeBtn) { activeBtn.style.outline = "none"; activeBtn = null; }
+          setSelectedButton(null);
+          if (activeLink && activeLink !== anchor) activeLink.style.outline = "none";
+          anchor.style.outline = "2px solid #0ea5e9";
+          activeLink = anchor;
+          setSelectedLink({ element: anchor, x: e.clientX, y: e.clientY });
+        }
       } else {
         if (activeBtn) { activeBtn.style.outline = "none"; activeBtn = null; }
+        if (activeLink) { activeLink.style.outline = "none"; activeLink = null; }
         setSelectedButton(null);
+        setSelectedLink(null);
       }
     };
     document.addEventListener("click", onDocClick);
@@ -397,6 +421,23 @@ const CDPEditorInner = (
     if (top < gap) top = gap;
     setBtnMenuPos({ top, left });
   }, [selectedButton]);
+
+  // ── Link menu position ───────────────────────────────────────────────────
+  useEffect(() => {
+    if (!selectedLink?.element) return;
+    const link = selectedLink.element;
+    const editorEl = link.closest(".rsw-editor .rsw-ce") as HTMLElement;
+    if (!editorEl) return;
+    const lRect = link.getBoundingClientRect();
+    const eRect = editorEl.getBoundingClientRect();
+    const gap = 8, mW = 200;
+    let top = lRect.bottom - eRect.top + gap;
+    let left = lRect.left - eRect.left;
+    if (left + mW > eRect.width) left = eRect.width - mW - gap;
+    if (left < gap) left = gap;
+    if (top + 100 > eRect.height) top = lRect.top - eRect.top - 100;
+    setLinkMenuPos({ top, left });
+  }, [selectedLink]);
 
   // ── Preview: render Liquid when in preview mode with previewData ─────────
   const hasPreviewData = previewData != null && Object.keys(previewData).length > 0;
@@ -556,6 +597,27 @@ const CDPEditorInner = (
     };
   })();
 
+  const handleEditLink = () => {
+    if (selectedLink?.element) {
+      setEditingLink(selectedLink.element);
+      setSelectedLink(null);
+      setShowLinkEditModal(true);
+    }
+  };
+
+  const linkMenuConfig = createLinkMenuConfig(
+    handleEditLink,
+    () => {
+      if (selectedLink?.element) {
+        selectedLink.element.style.outline = "";
+        selectedLink.element.replaceWith(...Array.from(selectedLink.element.childNodes));
+        syncEditorContentToState(setIframeContent);
+        setSelectedLink(null);
+      }
+    },
+    (color) => selectedLink?.element && updateButtonTextColorInEditor(selectedLink.element, color, setIframeContent, () => setSelectedLink(null)),
+  );
+
   const colorMenu = createColorMenu(applyHighlightColor);
   const fontMenu = createFontMenu(applyFontFamily);
 
@@ -595,14 +657,15 @@ const CDPEditorInner = (
 
             {/* Lists + Link */}
             <div className="flex items-center gap-1.5">
-              <Tooltip title="Numbered List"><button onMouseDown={(e) => { e.preventDefault(); document.execCommand("insertOrderedList"); }} className="toolbar-btn"><OLIcon /></button></Tooltip>
-              <Tooltip title="Bullet List"><button onMouseDown={(e) => { e.preventDefault(); document.execCommand("insertUnorderedList"); }} className="toolbar-btn"><ULIcon /></button></Tooltip>
+              <Tooltip title="Numbered List"><button onMouseDown={(e) => { e.preventDefault(); document.execCommand("insertOrderedList"); setTimeout(() => syncEditorContentToState(setIframeContent), 0); }} className="toolbar-btn"><OLIcon /></button></Tooltip>
+              <Tooltip title="Bullet List"><button onMouseDown={(e) => { e.preventDefault(); document.execCommand("insertUnorderedList"); setTimeout(() => syncEditorContentToState(setIframeContent), 0); }} className="toolbar-btn"><ULIcon /></button></Tooltip>
               <Tooltip title="Insert Link">
                 <button
                   onMouseDown={(e) => {
                     e.preventDefault();
-                    const url = window.prompt("Enter URL");
-                    if (url) document.execCommand("createLink", false, url);
+                    const sel = window.getSelection();
+                    if (sel && sel.rangeCount > 0) setLinkSelection(sel.getRangeAt(0).cloneRange());
+                    setShowLinkModal(true);
                   }}
                   className="toolbar-btn"
                 >
@@ -777,6 +840,15 @@ const CDPEditorInner = (
                 </div>
               )}
 
+              {/* Link context menu */}
+              {selectedLink && (
+                <div style={{ position: "absolute", top: linkMenuPos.top, left: linkMenuPos.left, zIndex: 1000, width: 200 }}>
+                  <Dropdown menu={linkMenuConfig} trigger={["click"]} open onOpenChange={(v) => { if (!v) { selectedLink.element.style.outline = "none"; setSelectedLink(null); } }}>
+                    <span />
+                  </Dropdown>
+                </div>
+              )}
+
               {/* Selection highlight overlays */}
               {rects.map((rect, i) => (
                 <div
@@ -818,6 +890,56 @@ const CDPEditorInner = (
         ]}
         onConfirm={handleButtonConfirm}
         onClose={() => { setShowButtonModal(false); setEditingButton(null); }}
+      />
+
+      <InputModal
+        show={showLinkEditModal}
+        title="Edit Link"
+        fields={[
+          { name: "linkText", label: "Link Text", placeholder: "Click here", defaultValue: editingLink?.textContent ?? "", required: true },
+          { name: "url", label: "URL", placeholder: "https://", defaultValue: editingLink?.getAttribute("href") ?? "", required: true },
+        ]}
+        onConfirm={({ linkText, url }) => {
+          if (editingLink) {
+            editingLink.textContent = linkText;
+            editingLink.href = url;
+            editingLink.style.outline = "";
+            syncEditorContentToState(setIframeContent);
+            setEditingLink(null);
+          }
+          setShowLinkEditModal(false);
+        }}
+        onClose={() => { setShowLinkEditModal(false); setEditingLink(null); }}
+      />
+
+      <InputModal
+        show={showLinkModal}
+        title="Insert Link"
+        fields={[
+          { name: "url", label: "URL", placeholder: "https://", required: true },
+          { name: "linkText", label: "Link Text", placeholder: "Displayed text (optional)", required: false },
+        ]}
+        onConfirm={({ url, linkText }) => {
+          setShowLinkModal(false);
+          const editor = document.querySelector(".rsw-editor .rsw-ce") as HTMLElement | null;
+          if (!editor || !url) return;
+          editor.focus();
+          const sel = window.getSelection();
+          if (linkSelection) {
+            sel?.removeAllRanges();
+            sel?.addRange(linkSelection);
+          }
+          document.execCommand("createLink", false, url);
+          const sel2 = window.getSelection();
+          const anchor = sel2?.anchorNode?.parentElement?.closest("a") as HTMLAnchorElement | null;
+          if (anchor) {
+            anchor.style.color = "#0ea5e9";
+            if (linkText) anchor.textContent = linkText;
+          }
+          setLinkSelection(null);
+          setTimeout(() => syncEditorContentToState(setIframeContent), 0);
+        }}
+        onClose={() => { setShowLinkModal(false); setLinkSelection(null); }}
       />
     </div>
   );

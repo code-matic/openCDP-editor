@@ -10,7 +10,6 @@ const INITIAL_HTML = `<!DOCTYPE html>
   <head>
     <style>
       body { font-family: Arial, sans-serif; color: #111827; }
-      .btn { display:inline-block; padding:12px 28px; background:#000144; color:#fff; text-decoration:none; border-radius:4px; font-weight:600; }
     </style>
   </head>
   <body>
@@ -20,9 +19,9 @@ const INITIAL_HTML = `<!DOCTYPE html>
         Thanks for joining! Your account is ready.
         Here's a summary of your order — {{ event.order_id }}.
       </p>
-      <p style="margin:32px 0; text-align:center;">
-        <a href="https://example.com/dashboard" class="btn">Go to Dashboard →</a>
-      </p>
+      <div data-editor-button-wrapper="true" style="text-align:center; margin:32px 0;">
+        <a href="https://example.com/dashboard" style="display:inline-block; padding:12px 28px; background:#000144; color:#fff; text-decoration:none; border-radius:4px; font-weight:600;" target="_blank" rel="noopener noreferrer">Go to Dashboard →</a>
+      </div>
       <hr style="border:none; border-top:1px solid #e5e7eb; margin:24px 0;" />
       <p style="font-size:12px; color:#9ca3af; text-align:center;">
         © 2026 Acme Corp · Unsubscribe
@@ -98,6 +97,94 @@ const theme = {
 
 // ── Demo App ──────────────────────────────────────────────────────────────────
 
+interface AttributePanelProps {
+  editorRef: React.RefObject<CDPEditorHandle | null>;
+  customText: string;
+  setCustomText: (v: string) => void;
+  setAttrPanelOpen: (v: boolean) => void;
+}
+
+const AttributePanel: React.FC<AttributePanelProps> = ({ editorRef, customText, setCustomText, setAttrPanelOpen }) => (
+  <>
+    {/* Quick-insert */}
+    <div
+      className="rounded-xl p-4"
+      style={{ background: theme.bgPanel, border: `1px solid ${theme.bgPanelBorder}` }}
+    >
+      <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: theme.textMuted }}>
+        Insert attribute
+      </p>
+      <div className="space-y-1.5">
+        {DEMO_ATTRIBUTES.map((attr) => (
+          <button
+            key={attr.value}
+            onClick={() => {
+              editorRef.current?.insert(attr.value);
+              setAttrPanelOpen(false);
+            }}
+            className="w-full text-left text-xs px-3 py-2 rounded-lg transition-all"
+            style={{
+              background: "rgba(255,255,255,0.8)",
+              border: `1px solid ${theme.border}`,
+              color: theme.textPrimary,
+            }}
+            onMouseEnter={(e) => {
+              const b = e.currentTarget as HTMLButtonElement;
+              b.style.background = theme.bgButton;
+              b.style.color = "#fff";
+              b.style.borderColor = theme.bgButton;
+            }}
+            onMouseLeave={(e) => {
+              const b = e.currentTarget as HTMLButtonElement;
+              b.style.background = "rgba(255,255,255,0.8)";
+              b.style.color = theme.textPrimary;
+              b.style.borderColor = theme.border;
+            }}
+          >
+            {attr.label}
+          </button>
+        ))}
+      </div>
+    </div>
+
+    {/* Custom insert */}
+    <div
+      className="rounded-xl p-4"
+      style={{ background: theme.bgPanel, border: `1px solid ${theme.bgPanelBorder}` }}
+    >
+      <p className="text-xs font-semibold uppercase tracking-widest mb-2" style={{ color: theme.textMuted }}>
+        Custom insert
+      </p>
+      <textarea
+        rows={3}
+        value={customText}
+        onChange={(e) => setCustomText(e.target.value)}
+        placeholder="Type anything…"
+        className="w-full text-xs rounded-lg px-2 py-1.5 resize-none focus:outline-none"
+        style={{
+          background: "rgba(255,255,255,0.9)",
+          border: `1px solid ${theme.border}`,
+          color: theme.textPrimary,
+          caretColor: theme.accent,
+        }}
+      />
+      <button
+        onClick={() => {
+          if (customText.trim()) {
+            editorRef.current?.insert(customText);
+            setCustomText("");
+            setAttrPanelOpen(false);
+          }
+        }}
+        className="mt-2 w-full text-xs font-semibold px-3 py-2 rounded-lg transition-all"
+        style={{ background: theme.bgButton, color: "#fff" }}
+      >
+        Insert at cursor
+      </button>
+    </div>
+  </>
+);
+
 export default function App() {
   const editorRef = useRef<CDPEditorHandle>(null);
 
@@ -128,87 +215,6 @@ export default function App() {
     setImages((prev) => prev.filter((i) => i.path !== path));
   };
 
-  // Shared panel content (rendered in sidebar on desktop, drawer on mobile)
-  const AttributePanel = () => (
-    <>
-      {/* Quick-insert */}
-      <div
-        className="rounded-xl p-4"
-        style={{ background: theme.bgPanel, border: `1px solid ${theme.bgPanelBorder}` }}
-      >
-        <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: theme.textMuted }}>
-          Insert attribute
-        </p>
-        <div className="space-y-1.5">
-          {DEMO_ATTRIBUTES.map((attr) => (
-            <button
-              key={attr.value}
-              onClick={() => {
-                editorRef.current?.insert(attr.value);
-                setAttrPanelOpen(false);
-              }}
-              className="w-full text-left text-xs px-3 py-2 rounded-lg transition-all"
-              style={{
-                background: "rgba(255,255,255,0.8)",
-                border: `1px solid ${theme.border}`,
-                color: theme.textPrimary,
-              }}
-              onMouseEnter={(e) => {
-                const b = e.currentTarget as HTMLButtonElement;
-                b.style.background = theme.bgButton;
-                b.style.color = "#fff";
-                b.style.borderColor = theme.bgButton;
-              }}
-              onMouseLeave={(e) => {
-                const b = e.currentTarget as HTMLButtonElement;
-                b.style.background = "rgba(255,255,255,0.8)";
-                b.style.color = theme.textPrimary;
-                b.style.borderColor = theme.border;
-              }}
-            >
-              {attr.label}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Custom insert */}
-      <div
-        className="rounded-xl p-4"
-        style={{ background: theme.bgPanel, border: `1px solid ${theme.bgPanelBorder}` }}
-      >
-        <p className="text-xs font-semibold uppercase tracking-widest mb-2" style={{ color: theme.textMuted }}>
-          Custom insert
-        </p>
-        <textarea
-          rows={3}
-          value={customText}
-          onChange={(e) => setCustomText(e.target.value)}
-          placeholder="Type anything…"
-          className="w-full text-xs rounded-lg px-2 py-1.5 resize-none focus:outline-none"
-          style={{
-            background: "rgba(255,255,255,0.9)",
-            border: `1px solid ${theme.border}`,
-            color: theme.textPrimary,
-            caretColor: theme.accent,
-          }}
-        />
-        <button
-          onClick={() => {
-            if (customText.trim()) {
-              editorRef.current?.insert(customText);
-              setCustomText("");
-              setAttrPanelOpen(false);
-            }
-          }}
-          className="mt-2 w-full text-xs font-semibold px-3 py-2 rounded-lg transition-all"
-          style={{ background: theme.bgButton, color: "#fff" }}
-        >
-          Insert at cursor
-        </button>
-      </div>
-    </>
-  );
 
   return (
     <>
@@ -311,7 +317,7 @@ export default function App() {
               />
               Read-only mode
             </label>
-            <AttributePanel />
+            <AttributePanel editorRef={editorRef} customText={customText} setCustomText={setCustomText} setAttrPanelOpen={setAttrPanelOpen} />
           </div>
         )}
 
@@ -368,7 +374,7 @@ export default function App() {
 
           {/* Desktop sidebar (hidden on mobile — handled by drawer) */}
           <div className="hidden lg:flex w-52 flex-shrink-0 flex-col gap-4">
-            <AttributePanel />
+            <AttributePanel editorRef={editorRef} customText={customText} setCustomText={setCustomText} setAttrPanelOpen={setAttrPanelOpen} />
           </div>
 
           {/* Editor + output */}

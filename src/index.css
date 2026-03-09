@@ -19,6 +19,23 @@
   padding: 12px;
 }
 
+/* Restore list styles that Tailwind Preflight resets */
+.rsw-ce ul {
+  list-style-type: disc;
+  padding-left: 1.5rem;
+  margin: 0.5rem 0;
+}
+
+.rsw-ce ol {
+  list-style-type: decimal;
+  padding-left: 1.5rem;
+  margin: 0.5rem 0;
+}
+
+.rsw-ce li {
+  display: list-item;
+}
+
 /* rsw renders an empty <Toolbar> when toolbarContent=null — hide it */
 .rsw-toolbar {
   display: none !important;

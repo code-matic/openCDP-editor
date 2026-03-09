@@ -157,6 +157,30 @@ export const createButtonMenuConfig = (
   ],
 });
 
+export const createLinkMenuConfig = (
+  handleEdit: () => void,
+  handleDelete: () => void,
+  handleTextColorChange: (color: string) => void,
+): MenuProps => ({
+  items: [
+    { key: "edit-link", label: "Edit Link", onClick: handleEdit },
+    {
+      key: "text-color",
+      label: "Text Color",
+      children: [
+        { key: "text-#0ea5e9", label: "Blue", onClick: () => handleTextColorChange("#0ea5e9") },
+        { key: "text-#10b981", label: "Green", onClick: () => handleTextColorChange("#10b981") },
+        { key: "text-#ef4444", label: "Red", onClick: () => handleTextColorChange("#ef4444") },
+        { key: "text-#f59e0b", label: "Orange", onClick: () => handleTextColorChange("#f59e0b") },
+        { key: "text-#8b5cf6", label: "Purple", onClick: () => handleTextColorChange("#8b5cf6") },
+        { key: "text-#000000", label: "Black", onClick: () => handleTextColorChange("#000000") },
+      ],
+    },
+    { type: "divider" as const },
+    { key: "delete", label: "Delete", danger: true, onClick: handleDelete },
+  ],
+});
+
 export const fontOptions = [
   { label: "Sans Serif", value: "Arial, sans-serif" },
   { label: "Fixed Width", value: "Courier New, monospace" },

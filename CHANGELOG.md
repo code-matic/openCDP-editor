@@ -6,6 +6,21 @@ This project follows [Semantic Versioning](https://semver.org/) and the [Keep a 
 
 ---
 
+## [4.0.1] — 2026-03-06
+
+### Fixed
+
+- **Alignment** — applying alignment to a multi-block selection now correctly aligns all highlighted paragraphs, not just the one containing the cursor. Cursor is placed at the end of the last aligned block after applying; selection highlight is cleared.
+- **Bullet & numbered lists** — Tailwind Preflight was stripping `list-style`, `padding`, and `display` from `ul`/`ol`/`li` elements, making list markers invisible. CSS rules added to `.rsw-ce` to restore them. State sync after list commands now uses an explicit `syncEditorContentToState` call to handle browsers that don't fire `input` events for `insertOrderedList`/`insertUnorderedList`.
+- **Link insertion** — replaced `window.prompt` with a proper modal (URL + Link Text fields). New links default to sky-blue (`#0ea5e9`).
+- **Link context menu** — clicking a plain `<a>` link in the editor now shows a dedicated link menu (Edit Link, Text Color, Delete) instead of the button menu.
+- **Edit link modal** — pre-fills Link Text and URL from the existing anchor; updating either field is reflected immediately in the editor.
+- **Button vs link detection** — improved heuristic now also detects externally crafted buttons (inline `background-color` + `padding` on `<a>`) in addition to editor-inserted ones (`data-editor-button-wrapper`). Fixed demo initial HTML to use proper button wrapper structure.
+- **Insert at cursor after focus loss** — `insert()` ref method now restores the last known editor selection (`lastSelectionRef`) when the editor has lost focus (e.g. after typing in the custom insert textarea), falling back to end-of-editor if no saved selection exists.
+- **Custom insert textarea focus** — `AttributePanel` was defined as a component inside `App`, causing React to unmount and remount it (and lose textarea focus) on every keystroke. Extracted as a stable top-level component.
+
+---
+
 ## [4.0.0] — 2026-03-06
 
 ### Breaking Changes

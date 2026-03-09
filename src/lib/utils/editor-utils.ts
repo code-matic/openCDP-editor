@@ -101,22 +101,14 @@ export function applyAlignmentToSelection(
   const range = selection.getRangeAt(0);
   if (!editor.contains(range.commonAncestorContainer)) return;
 
-  const marker = insertSelectionMarker();
-  if (!marker) return;
+  const BLOCK_TAGS = new Set(["p", "div", "li", "section", "h1", "h2", "h3", "h4", "h5", "h6", "blockquote", "pre"]);
 
   const getBlockElement = (node: Node | null): HTMLElement | null => {
     while (node && node !== editor) {
       if (node instanceof HTMLElement) {
+        const tag = node.tagName.toLowerCase();
         const display = window.getComputedStyle(node).display;
-        if (
-          display === "block" ||
-          display === "list-item" ||
-          display === "table" ||
-          node.tagName.toLowerCase() === "p" ||
-          node.tagName.toLowerCase() === "div" ||
-          node.tagName.toLowerCase() === "li" ||
-          node.tagName.toLowerCase() === "section"
-        ) {
+        if (BLOCK_TAGS.has(tag) || display === "block" || display === "list-item" || display === "table") {
           return node;
         }
       }
@@ -125,12 +117,51 @@ export function applyAlignmentToSelection(
     return null;
   };
 
-  const block = getBlockElement(marker);
-  if (block) {
-    block.style.textAlign = alignment;
+  // Collect all block elements touched by the selection range
+  const affectedBlocks = new Set<HTMLElement>();
+
+  const startBlock = getBlockElement(range.startContainer);
+  if (startBlock) affectedBlocks.add(startBlock);
+
+  const endBlock = getBlockElement(range.endContainer);
+  if (endBlock) affectedBlocks.add(endBlock);
+
+  // Walk all nodes inside the range to catch any blocks fully contained within it
+  const walker = document.createTreeWalker(
+    range.commonAncestorContainer,
+    NodeFilter.SHOW_ELEMENT,
+    {
+      acceptNode(node) {
+        return range.intersectsNode(node) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
+      },
+    }
+  );
+
+  let node: Node | null = walker.nextNode();
+  while (node) {
+    const block = getBlockElement(node);
+    if (block) affectedBlocks.add(block);
+    node = walker.nextNode();
   }
 
-  restoreSelectionFromMarker(marker);
+  let lastBlock: HTMLElement | null = null;
+  affectedBlocks.forEach((block) => {
+    block.style.textAlign = alignment;
+    lastBlock = block;
+  });
+
+  // Collapse the selection to the end of the last aligned block so the
+  // highlight is removed but the cursor stays in the editor
+  if (lastBlock) {
+    const collapsed = document.createRange();
+    collapsed.selectNodeContents(lastBlock);
+    collapsed.collapse(false);
+    selection.removeAllRanges();
+    selection.addRange(collapsed);
+    (lastBlock as HTMLElement).focus?.();
+    editor.focus();
+  }
+
   handleEditorChange(editor.innerHTML);
 }
 
