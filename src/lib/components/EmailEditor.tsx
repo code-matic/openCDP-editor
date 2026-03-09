@@ -44,6 +44,7 @@ import {
   removeButtonBackgroundInEditor,
   removeButtonBorderInEditor,
   removeButtonPaddingInEditor,
+  syncEditorContentToState,
 } from "../utils/editor-utils";
 import { handleInlineCSS, needsInliningDetailed } from "../utils/inliner";
 import liquidEngine from "../utils/liquid-engine";
@@ -260,6 +261,7 @@ const CDPEditorInner = (
 
   const [showImageModal, setShowImageModal] = useState(false);
   const [showButtonModal, setShowButtonModal] = useState(false);
+  const [editingButton, setEditingButton] = useState<HTMLAnchorElement | null>(null);
   const [imageToReplace, setImageToReplace] = useState<HTMLImageElement | null>(null);
 
   const [savedSelection, setSavedSelection] = useState<Range | null>(null);
@@ -327,6 +329,7 @@ const CDPEditorInner = (
       const btn = target.closest(".rsw-editor .rsw-ce a") as HTMLAnchorElement | null;
       const editorEl = document.querySelector(".rsw-editor .rsw-ce");
       if (btn && editorEl?.contains(btn)) {
+        e.preventDefault(); // Prevent default link navigation
         if (activeBtn && activeBtn !== btn) activeBtn.style.outline = "none";
         btn.style.outline = "2px solid #4f46e5";
         activeBtn = btn;
@@ -485,10 +488,18 @@ const CDPEditorInner = (
     setShowButtonModal(true);
   };
 
-  const handleButtonInsert = (values: Record<string, string>) => {
+  const handleButtonConfirm = (values: Record<string, string>) => {
     const { buttonText, buttonUrl } = values;
     if (!buttonText || !buttonUrl) return;
-    insertButtonAtCursorInEditor(buttonText, buttonUrl, setIframeContent, lastSelectionRef, handleEditorChange);
+    if (editingButton) {
+      editingButton.textContent = buttonText;
+      editingButton.href = buttonUrl;
+      editingButton.style.outline = "";
+      syncEditorContentToState(setIframeContent);
+      setEditingButton(null);
+    } else {
+      insertButtonAtCursorInEditor(buttonText, buttonUrl, setIframeContent, lastSelectionRef, handleEditorChange);
+    }
     setShowButtonModal(false);
   };
 
@@ -515,17 +526,35 @@ const CDPEditorInner = (
     (width) => imgSelection?.element && updateImageWidthInEditor(imgSelection.element, width, setIframeContent, () => setImgSelection(null)),
   );
 
-  const buttonMenuConfig = createButtonMenuConfig(
-    () => selectedButton?.element && deleteButtonFromEditor(selectedButton.element, setIframeContent, () => setSelectedButton(null)),
-    () => selectedButton?.element && removeButtonBackgroundInEditor(selectedButton.element, setIframeContent, () => setSelectedButton(null)),
-    () => selectedButton?.element && removeButtonBorderInEditor(selectedButton.element, setIframeContent, () => setSelectedButton(null)),
-    () => selectedButton?.element && removeButtonPaddingInEditor(selectedButton.element, setIframeContent, () => setSelectedButton(null)),
-    (color) => selectedButton?.element && updateButtonStyleInEditor(selectedButton.element, color, setIframeContent, () => setSelectedButton(null)),
-    (color) => selectedButton?.element && updateButtonTextColorInEditor(selectedButton.element, color, setIframeContent, () => setSelectedButton(null)),
-    (radius) => selectedButton?.element && updateButtonBorderRadiusInEditor(selectedButton.element, radius, setIframeContent, () => setSelectedButton(null)),
-    (padding) => selectedButton?.element && updateButtonPaddingInEditor(selectedButton.element, padding, setIframeContent, () => setSelectedButton(null)),
-    (align) => selectedButton?.element && alignButtonInEditor(selectedButton.element, align, setIframeContent, () => setSelectedButton(null)),
-  );
+  const handleEditButton = () => {
+    if (selectedButton?.element) {
+      setEditingButton(selectedButton.element);
+      setSelectedButton(null);
+      setShowButtonModal(true);
+    }
+  };
+
+  const buttonMenuConfig = (() => {
+    const base = createButtonMenuConfig(
+      () => selectedButton?.element && deleteButtonFromEditor(selectedButton.element, setIframeContent, () => setSelectedButton(null)),
+      () => selectedButton?.element && removeButtonBackgroundInEditor(selectedButton.element, setIframeContent, () => setSelectedButton(null)),
+      () => selectedButton?.element && removeButtonBorderInEditor(selectedButton.element, setIframeContent, () => setSelectedButton(null)),
+      () => selectedButton?.element && removeButtonPaddingInEditor(selectedButton.element, setIframeContent, () => setSelectedButton(null)),
+      (color) => selectedButton?.element && updateButtonStyleInEditor(selectedButton.element, color, setIframeContent, () => setSelectedButton(null)),
+      (color) => selectedButton?.element && updateButtonTextColorInEditor(selectedButton.element, color, setIframeContent, () => setSelectedButton(null)),
+      (radius) => selectedButton?.element && updateButtonBorderRadiusInEditor(selectedButton.element, radius, setIframeContent, () => setSelectedButton(null)),
+      (padding) => selectedButton?.element && updateButtonPaddingInEditor(selectedButton.element, padding, setIframeContent, () => setSelectedButton(null)),
+      (align) => selectedButton?.element && alignButtonInEditor(selectedButton.element, align, setIframeContent, () => setSelectedButton(null)),
+    );
+    return {
+      ...base,
+      items: [
+        { key: "edit-button", label: "✏️ Edit Button", onClick: handleEditButton },
+        { type: "divider" as const },
+        ...(base.items ?? []),
+      ],
+    };
+  })();
 
   const colorMenu = createColorMenu(applyHighlightColor);
   const fontMenu = createFontMenu(applyFontFamily);
@@ -782,13 +811,13 @@ const CDPEditorInner = (
 
       <InputModal
         show={showButtonModal}
-        title="Insert Button"
+        title={editingButton ? "Edit Button" : "Insert Button"}
         fields={[
-          { name: "buttonText", label: "Button Text", placeholder: "Click Here" },
-          { name: "buttonUrl", label: "Button URL", placeholder: "https://" },
+          { name: "buttonText", label: "Button Text", placeholder: "Click Here", defaultValue: editingButton?.textContent ?? "" },
+          { name: "buttonUrl", label: "Button URL", placeholder: "https://", defaultValue: editingButton?.getAttribute("href") ?? "" },
         ]}
-        onConfirm={handleButtonInsert}
-        onClose={() => setShowButtonModal(false)}
+        onConfirm={handleButtonConfirm}
+        onClose={() => { setShowButtonModal(false); setEditingButton(null); }}
       />
     </div>
   );

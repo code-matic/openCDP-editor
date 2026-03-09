@@ -26,7 +26,10 @@ const InputModal: React.FC<InputModalProps> = ({ show, title, fields, onConfirm,
       fields.forEach((f) => { if (f.defaultValue) defaults[f.name] = f.defaultValue; });
       form.setFieldsValue(defaults);
     }
-  }, [show, fields, form]);
+    // Intentionally omitting `fields` from deps — we only want to seed values
+    // when the modal opens, not on every re-render that recreates the fields array.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [show, form]);
 
   const handleOk = async () => {
     try {

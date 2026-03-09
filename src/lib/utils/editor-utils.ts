@@ -338,10 +338,12 @@ export function deleteButtonFromEditor(
   const editor = getEditorElement();
   if (!editor) return;
   button.style.outline = "";
-  const wrapper = button.closest("div");
-  if (wrapper && wrapper.parentElement === editor) {
-    wrapper.remove();
+  const targetElement = button.closest<HTMLElement>("[data-editor-button-wrapper='true']");
+
+  if (targetElement && editor.contains(targetElement)) {
+    targetElement.remove();
   } else {
+    // Fallback to just removing the button if the wrapper is not found or not within the editor
     button.remove();
   }
   syncEditorContentToState(setIframeContent);
@@ -488,8 +490,11 @@ export function insertButtonAtCursorInEditor(
   range.deleteContents();
 
   const wrapper = document.createElement("div");
+  wrapper.contentEditable = "false"; // Prevent editing the wrapper itself
   wrapper.style.textAlign = "center";
   wrapper.style.margin = "20px 0";
+  wrapper.style.userSelect = "none"; // Prevent selecting content inside the wrapper easily
+  wrapper.setAttribute("data-editor-button-wrapper", "true"); // Add unique data attribute
 
   const button = document.createElement("a");
   button.href = buttonUrl;
