@@ -1,6 +1,6 @@
 {
   "name": "@codematic.io/cdp-editor",
-  "version": "3.2.0",
+  "version": "4.0.0",
   "description": "A powerful rich-text email editor with HTML code view, template variables, image management, and CSS inlining",
   "type": "module",
   "main": "./dist/email-editor.umd.cjs",
@@ -51,17 +51,14 @@
   ],
   "peerDependencies": {
     "react": ">=18.0.0",
-    "react-dom": ">=18.0.0"
-  },
-  "dependencies": {
-    "@codematic.io/cdp-editor": "^3.0.1",
-    "@monaco-editor/react": "^4.6.0",
-    "antd": "^5.22.4",
-    "currency-codes": "^2.1.0",
-    "juice": "^11.0.0",
-    "liquidjs": "^10.21.0",
-    "react-simple-wysiwyg": "^3.1.2",
-    "sonner": "^1.7.4"
+    "react-dom": ">=18.0.0",
+    "@monaco-editor/react": ">=4.0.0",
+    "antd": ">=5.0.0",
+    "currency-codes": ">=2.0.0",
+    "juice": ">=10.0.0",
+    "liquidjs": ">=10.0.0",
+    "react-simple-wysiwyg": ">=3.0.0",
+    "sonner": ">=1.0.0"
   },
   "devDependencies": {
     "@types/react": "^18.3.18",

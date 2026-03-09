@@ -15,7 +15,7 @@ const INITIAL_HTML = `<!DOCTYPE html>
   </head>
   <body>
     <div style="max-width:600px; margin:0 auto; padding:24px;">
-      <h1>Hi {{ customer.first_name | default: "there" }} 👋</h1>
+      <h3>Hi {{ customer.first_name | default: "there" }} 👋</h3>
       <p style="line-height:1.7; color:#374151;">
         Thanks for joining! Your account is ready.
         Here's a summary of your order — {{ event.order_id }}.

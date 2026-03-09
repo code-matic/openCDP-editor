@@ -25,10 +25,30 @@ A powerful, fully-featured rich text editor built for HTML emails. Drop it into 
 ## Installation
 
 ```bash
-npm install @codematic.io/cdp-editor
+npm install @codematic.io/cdp-editor \
+  react react-dom \
+  @monaco-editor/react \
+  antd \
+  liquidjs \
+  juice \
+  sonner \
+  react-simple-wysiwyg \
+  currency-codes \
+  --legacy-peer-deps
 ```
 
-> **Peer dependencies** — your project must already have `react` and `react-dom` (≥ 18) installed.
+> **All of the above are peer dependencies** — they are not bundled into the package and must be installed alongside it. If your project already has any of them, you can omit those from the command.
+>
+> | Peer dependency | Purpose |
+> |---|---|
+> | `react`, `react-dom` | React runtime (≥ 18) |
+> | `antd` | UI components — buttons, modals, tooltips, colour picker |
+> | `@monaco-editor/react` | VS Code-grade HTML code editor |
+> | `liquidjs` | Liquid template variable rendering in preview mode |
+> | `juice` | CSS inlining for email client compatibility |
+> | `sonner` | Toast notifications |
+> | `react-simple-wysiwyg` | Core WYSIWYG editing primitives |
+> | `currency-codes` | Currency code validation for template variables |
 
 ---
 
