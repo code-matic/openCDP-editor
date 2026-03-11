@@ -106,6 +106,10 @@ const LinkIcon = () => (
     <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
   </svg>
 );
+const H1Icon = () => <span style={{ fontWeight: 500, fontSize: 17, letterSpacing: "-0.5px", lineHeight: 1 }}>H1</span>;
+const H2Icon = () => <span style={{ fontWeight: 500, fontSize: 17, letterSpacing: "-0.5px", lineHeight: 1 }}>H2</span>;
+const H3Icon = () => <span style={{ fontWeight: 500, fontSize: 17, letterSpacing: "-0.5px", lineHeight: 1 }}>H3</span>;
+
 const AlignLeftIcon = () => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -276,6 +280,7 @@ const CDPEditorInner = (
   const [selectedColor, setSelectedColor] = useState("#000000");
   const [tempColor, setTempColor] = useState("#000000");
   const [rects, setRects] = useState<DOMRect[]>([]);
+  const [activeHeading, setActiveHeading] = useState<"h1" | "h2" | "h3" | null>(null);
 
   const [imgSelection, setImgSelection] = useState<{ element: HTMLImageElement; x: number; y: number } | null>(null);
   const [imgMenuPos, setImgMenuPos] = useState({ top: 0, left: 0 });
@@ -372,12 +377,16 @@ const CDPEditorInner = (
     const onSelChange = () => {
       const editor = EditorRef.current;
       const sel = window.getSelection();
-      if (!sel || !editor || !editor.contains(sel.anchorNode)) { setRects([]); return; }
+      if (!sel || !editor || !editor.contains(sel.anchorNode)) { setRects([]); setActiveHeading(null); return; }
       const range = sel.getRangeAt(0);
       setRects(sel.isCollapsed ? [] : Array.from(range.getClientRects()));
       let node: Node | null = sel.anchorNode;
       if (node?.nodeType === Node.TEXT_NODE) node = (node as Text).parentElement;
-      if (node instanceof HTMLElement) setSelectedColor(normalizeColor(window.getComputedStyle(node).color));
+      if (node instanceof HTMLElement) {
+        setSelectedColor(normalizeColor(window.getComputedStyle(node).color));
+        const block = node.closest("h1, h2, h3");
+        setActiveHeading(block ? (block.tagName.toLowerCase() as "h1" | "h2" | "h3") : null);
+      }
     };
     document.addEventListener("selectionchange", onSelChange);
     window.addEventListener("scroll", onSelChange, true);
@@ -644,6 +653,31 @@ const CDPEditorInner = (
 
             <div className="w-px h-4 bg-gray-300 mx-1 flex-shrink-0" />
 
+            {/* Headings */}
+            <div className="flex items-center gap-1.5">
+              {(["h1", "h2", "h3"] as const).map((tag, i) => {
+                const Icon = [H1Icon, H2Icon, H3Icon][i];
+                const isActive = activeHeading === tag;
+                return (
+                  <Tooltip key={tag} title={isActive ? "Remove heading" : `Heading ${i + 1}`}>
+                    <button
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        document.execCommand("formatBlock", false, isActive ? "p" : tag);
+                        setTimeout(() => syncEditorContentToState(setIframeContent), 0);
+                      }}
+                      className="toolbar-btn"
+                      style={isActive ? { background: "#1e293b", color: "#fff", borderColor: "#1e293b" } : undefined}
+                    >
+                      <Icon />
+                    </button>
+                  </Tooltip>
+                );
+              })}
+            </div>
+
+            <div className="w-px h-4 bg-gray-300 mx-1 flex-shrink-0" />
+
             {/* Basic formatting */}
             <div className="flex items-center gap-1.5">
               <Tooltip title="Bold (Ctrl+B)"><button onMouseDown={(e) => { e.preventDefault(); document.execCommand("bold"); }} className="toolbar-btn"><BoldIcon /></button></Tooltip>
@@ -699,32 +733,32 @@ const CDPEditorInner = (
 
             {/* Text colour */}
             <div className="flex items-center gap-1.5">
-            <Tooltip title="Text Color">
-              <ColorPicker
-                value={tempColor}
-                open={pickerOpen}
-                onOpenChange={(open) => {
-                  setPickerOpen(open);
-                  if (open) { saveSelectionBeforeDropdown(); setTempColor(selectedColor); }
-                }}
-                onChange={(c) => setTempColor(c.toHexString())}
-                panelRender={(panel) => (
-                  <div>
-                    {panel}
-                    <button
-                      className="border text-xs px-2 py-1 mt-1 rounded hover:bg-gray-50"
-                      onClick={() => { applyHighlightColor(tempColor); setPickerOpen(false); }}
-                    >
-                      Apply
-                    </button>
-                  </div>
-                )}
-              >
-                <button type="button" className="toolbar-btn">
-                  <div style={{ width: 18, height: 18, backgroundColor: selectedColor, borderRadius: 2, border: "1px solid #ccc" }} />
-                </button>
-              </ColorPicker>
-            </Tooltip>
+              <Tooltip title="Text Color">
+                <ColorPicker
+                  value={tempColor}
+                  open={pickerOpen}
+                  onOpenChange={(open) => {
+                    setPickerOpen(open);
+                    if (open) { saveSelectionBeforeDropdown(); setTempColor(selectedColor); }
+                  }}
+                  onChange={(c) => setTempColor(c.toHexString())}
+                  panelRender={(panel) => (
+                    <div>
+                      {panel}
+                      <button
+                        className="border text-xs px-2 py-1 mt-1 rounded hover:bg-gray-50"
+                        onClick={() => { applyHighlightColor(tempColor); setPickerOpen(false); }}
+                      >
+                        Apply
+                      </button>
+                    </div>
+                  )}
+                >
+                  <button type="button" className="toolbar-btn">
+                    <div style={{ width: 18, height: 18, backgroundColor: selectedColor, borderRadius: 2, border: "1px solid #ccc" }} />
+                  </button>
+                </ColorPicker>
+              </Tooltip>
             </div>
             <div className="w-px h-4 bg-gray-300 mx-1 flex-shrink-0" />
             {/* Font family */}

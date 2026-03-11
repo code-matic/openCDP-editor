@@ -6,6 +6,18 @@ This project follows [Semantic Versioning](https://semver.org/) and the [Keep a 
 
 ---
 
+## [4.0.2] — 2026-03-06
+
+### Added
+
+- **H1 / H2 / H3 heading buttons** — new toolbar buttons apply heading block formatting via `formatBlock`. Clicking an active heading button toggles the block back to a `<p>` tag. The active heading button is visually highlighted so users can see which heading level the cursor is in.
+
+### Fixed
+
+- **List and heading styles in external apps** — created `src/lib/style.css` (imported via `src/lib/index.ts`) so that `.rsw-ce` list and heading styles are bundled into `dist/style.css`. Consumers who import `@codematic.io/cdp-editor/style.css` now get correct `ul`, `ol`, `li`, `h1`, `h2`, `h3` rendering even when Tailwind Preflight is active in their app.
+
+---
+
 ## [4.0.1] — 2026-03-06
 
 ### Fixed

@@ -36,6 +36,11 @@
   display: list-item;
 }
 
+/* Restore heading styles that Tailwind Preflight resets */
+.rsw-ce h1 { font-size: 2em;   font-weight: 700; margin: 0.67em 0; line-height: 1.2; }
+.rsw-ce h2 { font-size: 1.5em; font-weight: 700; margin: 0.75em 0; line-height: 1.3; }
+.rsw-ce h3 { font-size: 1.17em; font-weight: 700; margin: 0.83em 0; line-height: 1.4; }
+
 /* rsw renders an empty <Toolbar> when toolbarContent=null — hide it */
 .rsw-toolbar {
   display: none !important;

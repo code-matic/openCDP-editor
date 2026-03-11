@@ -1,3 +1,5 @@
+import "./style.css";
+
 // Main component
 export { CDPEditor, default } from "./components/EmailEditor";
 
