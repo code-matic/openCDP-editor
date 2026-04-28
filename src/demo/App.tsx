@@ -65,17 +65,42 @@ const DEMO_IMAGES: ImageAsset[] = [
   },
 ];
 
-// ── Feature list ──────────────────────────────────────────────────────────────
+// ── Feature chips (hero) ──────────────────────────────────────────────────────
 
 const FEATURES = [
-  { icon: "✍️", label: "Rich text editing", desc: "Bold, italic, lists, headings" },
-  { icon: "🖼️", label: "Image management", desc: "Insert, replace, resize, align" },
-  { icon: "🔘", label: "Button builder", desc: "Insert styled CTA buttons" },
-  { icon: "🎨", label: "Colours & fonts", desc: "Full colour picker + font families" },
-  { icon: "↔️", label: "Text alignment", desc: "Left, center, right" },
-  { icon: "📐", label: "HTML / Monaco view", desc: "Edit raw HTML with syntax highlight" },
-  { icon: "📦", label: "Inline CSS", desc: "Inline <style> tags for email clients" },
-  { icon: "📱", label: "Phone preview", desc: "See how it looks on mobile" },
+  { icon: "✍️", label: "Rich text editing" },
+  { icon: "🖼️", label: "Image management" },
+  { icon: "🔘", label: "Button builder" },
+  { icon: "🎨", label: "Colours & fonts" },
+  { icon: "↔️", label: "Text alignment" },
+  { icon: "📐", label: "HTML / Monaco view" },
+  { icon: "📦", label: "Inline CSS" },
+  { icon: "📱", label: "Phone preview" },
+];
+
+// ── How-to guide steps ────────────────────────────────────────────────────────
+
+const HOW_TO_STEPS = [
+  {
+    step: "01",
+    title: "Write your content",
+    desc: "Click anywhere in the editor and start typing. Use the toolbar to apply bold, italic, headings, lists, and alignment. Press Ctrl+B / Ctrl+I for quick formatting.",
+  },
+  {
+    step: "02",
+    title: "Insert images & buttons",
+    desc: "Click the image icon in the toolbar to open the image library — upload new assets or pick an existing one. Use the button icon to insert a styled CTA button. Click any inserted element to reveal its edit menu.",
+  },
+  {
+    step: "03",
+    title: "Inject dynamic attributes",
+    desc: "Place your cursor where you want a variable, then click an attribute from the sidebar (e.g. First Name). The tag is inserted at the cursor and will be replaced with real data at send time.",
+  },
+  {
+    step: "04",
+    title: "Preview & export",
+    desc: 'Hit "Preview" in the editor toolbar to see how your email looks on a phone. Switch to "View HTML" to inspect or hand-edit the raw HTML. Copy the output with the button above the code block.',
+  },
 ];
 
 // ── Light blue theme tokens ───────────────────────────────────────────────────
@@ -457,24 +482,37 @@ export default function App() {
 
 
 
-            {/* Feature grid */}
-            <div className="mt-5 sm:mt-6 grid grid-cols-2 sm:grid-cols-4 gap-3">
-              {FEATURES.map((f) => (
-                <div
-                  key={f.label}
-                  className="rounded-xl p-3 sm:p-4"
-                  style={{
-                    background: theme.bgPanel,
-                    border: `1px solid ${theme.bgPanelBorder}`,
-                  }}
-                >
-                  <div className="text-lg sm:text-xl mb-1 sm:mb-2">{f.icon}</div>
-                  <p className="font-semibold text-xs sm:text-sm" style={{ color: theme.textPrimary }}>{f.label}</p>
-                  <p className="text-xs mt-0.5 hidden sm:block" style={{ color: theme.textMuted }}>
-                    {f.desc}
-                  </p>
-                </div>
-              ))}
+            {/* How to use */}
+            <div className="mt-6 sm:mt-8">
+              <p
+                className="text-xs font-semibold uppercase tracking-widest mb-4"
+                style={{ color: theme.textMuted }}
+              >
+                How to use
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {HOW_TO_STEPS.map((s) => (
+                  <div
+                    key={s.step}
+                    className="rounded-xl p-4 flex gap-4"
+                    style={{
+                      background: theme.bgPanel,
+                      border: `1px solid ${theme.bgPanelBorder}`,
+                    }}
+                  >
+                    <span
+                      className="text-2xl font-black flex-shrink-0 leading-none mt-0.5"
+                      style={{ color: "rgba(2,132,199,0.18)", fontVariantNumeric: "tabular-nums" }}
+                    >
+                      {s.step}
+                    </span>
+                    <div>
+                      <p className="font-semibold text-sm mb-1" style={{ color: theme.textPrimary }}>{s.title}</p>
+                      <p className="text-xs leading-relaxed" style={{ color: theme.textMuted }}>{s.desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
 
           </div>

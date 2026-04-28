@@ -281,12 +281,17 @@ const CDPEditorInner = (
   const [tempColor, setTempColor] = useState("#000000");
   const [rects, setRects] = useState<DOMRect[]>([]);
   const [activeHeading, setActiveHeading] = useState<"h1" | "h2" | "h3" | null>(null);
+  const [activeBold, setActiveBold] = useState(false);
+  const [activeItalic, setActiveItalic] = useState(false);
+  const [activeUnderline, setActiveUnderline] = useState(false);
+  const [activeStrike, setActiveStrike] = useState(false);
 
   const [imgSelection, setImgSelection] = useState<{ element: HTMLImageElement; x: number; y: number } | null>(null);
   const [imgMenuPos, setImgMenuPos] = useState({ top: 0, left: 0 });
 
   const [selectedButton, setSelectedButton] = useState<{ element: HTMLAnchorElement; x: number; y: number } | null>(null);
   const [btnMenuPos, setBtnMenuPos] = useState({ top: 0, left: 0 });
+  const [btnLabelPos, setBtnLabelPos] = useState({ top: 0, left: 0 });
 
   const EditorRef = useRef<HTMLDivElement>(null);
   const lastSelectionRef = useRef<Range | null>(null);
@@ -349,12 +354,13 @@ const CDPEditorInner = (
         if (isButton) {
           if (activeLink) { activeLink.style.outline = "none"; activeLink = null; }
           setSelectedLink(null);
-          if (activeBtn && activeBtn !== anchor) activeBtn.style.outline = "none";
-          anchor.style.outline = "2px solid #4f46e5";
+          if (activeBtn && activeBtn !== anchor) { activeBtn.style.outline = "none"; activeBtn.style.boxShadow = ""; }
+          anchor.style.outline = "3px solid #4f46e5";
+          anchor.style.boxShadow = "0 0 0 5px rgba(79,70,229,0.18)";
           activeBtn = anchor;
           setSelectedButton({ element: anchor, x: e.clientX, y: e.clientY });
         } else {
-          if (activeBtn) { activeBtn.style.outline = "none"; activeBtn = null; }
+          if (activeBtn) { activeBtn.style.outline = "none"; activeBtn.style.boxShadow = ""; activeBtn = null; }
           setSelectedButton(null);
           if (activeLink && activeLink !== anchor) activeLink.style.outline = "none";
           anchor.style.outline = "2px solid #0ea5e9";
@@ -362,7 +368,7 @@ const CDPEditorInner = (
           setSelectedLink({ element: anchor, x: e.clientX, y: e.clientY });
         }
       } else {
-        if (activeBtn) { activeBtn.style.outline = "none"; activeBtn = null; }
+        if (activeBtn) { activeBtn.style.outline = "none"; activeBtn.style.boxShadow = ""; activeBtn = null; }
         if (activeLink) { activeLink.style.outline = "none"; activeLink = null; }
         setSelectedButton(null);
         setSelectedLink(null);
@@ -377,7 +383,7 @@ const CDPEditorInner = (
     const onSelChange = () => {
       const editor = EditorRef.current;
       const sel = window.getSelection();
-      if (!sel || !editor || !editor.contains(sel.anchorNode)) { setRects([]); setActiveHeading(null); return; }
+      if (!sel || !editor || !editor.contains(sel.anchorNode)) { setRects([]); setActiveHeading(null); setActiveBold(false); setActiveItalic(false); setActiveUnderline(false); setActiveStrike(false); return; }
       const range = sel.getRangeAt(0);
       setRects(sel.isCollapsed ? [] : Array.from(range.getClientRects()));
       let node: Node | null = sel.anchorNode;
@@ -386,6 +392,10 @@ const CDPEditorInner = (
         setSelectedColor(normalizeColor(window.getComputedStyle(node).color));
         const block = node.closest("h1, h2, h3");
         setActiveHeading(block ? (block.tagName.toLowerCase() as "h1" | "h2" | "h3") : null);
+        setActiveBold(document.queryCommandState("bold"));
+        setActiveItalic(document.queryCommandState("italic"));
+        setActiveUnderline(document.queryCommandState("underline"));
+        setActiveStrike(document.queryCommandState("strikeThrough"));
       }
     };
     document.addEventListener("selectionchange", onSelChange);
@@ -429,6 +439,10 @@ const CDPEditorInner = (
     if (left < gap) left = gap;
     if (top < gap) top = gap;
     setBtnMenuPos({ top, left });
+    setBtnLabelPos({
+      top: Math.max(4, bRect.top - eRect.top - 26),
+      left: bRect.left - eRect.left + bRect.width / 2,
+    });
   }, [selectedButton]);
 
   // ── Link menu position ───────────────────────────────────────────────────
@@ -464,6 +478,12 @@ const CDPEditorInner = (
 
   // ── Derived state ────────────────────────────────────────────────────────
   const requiresInlining = useMemo(() => needsInliningDetailed(value), [value]);
+
+  const { wordCount, charCount } = useMemo(() => {
+    const text = value.replace(/<[^>]*>/g, " ").replace(/&[a-z]+;/gi, " ").replace(/\s+/g, " ").trim();
+    const words = text.length === 0 ? 0 : text.split(" ").filter(Boolean).length;
+    return { wordCount: words, charCount: text.replace(/ /g, "").length };
+  }, [value]);
 
   // ── Editor change ────────────────────────────────────────────────────────
   const handleEditorChange = (newHtml: string) => {
@@ -599,7 +619,7 @@ const CDPEditorInner = (
     return {
       ...base,
       items: [
-        { key: "edit-button", label: "✏️ Edit Button", onClick: handleEditButton },
+        { key: "edit-button", label: <span style={{ display: "flex", alignItems: "center", gap: 6 }}><svg width={13} height={13} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: "inline", flexShrink: 0 }}><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></svg>Edit Button</span>, onClick: handleEditButton },
         { type: "divider" as const },
         ...(base.items ?? []),
       ],
@@ -680,10 +700,10 @@ const CDPEditorInner = (
 
             {/* Basic formatting */}
             <div className="flex items-center gap-1.5">
-              <Tooltip title="Bold (Ctrl+B)"><button onMouseDown={(e) => { e.preventDefault(); document.execCommand("bold"); }} className="toolbar-btn"><BoldIcon /></button></Tooltip>
-              <Tooltip title="Italic (Ctrl+I)"><button onMouseDown={(e) => { e.preventDefault(); document.execCommand("italic"); }} className="toolbar-btn"><ItalicIcon /></button></Tooltip>
-              <Tooltip title="Underline (Ctrl+U)"><button onMouseDown={(e) => { e.preventDefault(); document.execCommand("underline"); }} className="toolbar-btn"><UnderlineIcon /></button></Tooltip>
-              <Tooltip title="Strikethrough"><button onMouseDown={(e) => { e.preventDefault(); document.execCommand("strikeThrough"); }} className="toolbar-btn"><StrikeIcon /></button></Tooltip>
+              <Tooltip title="Bold (Ctrl+B)"><button onMouseDown={(e) => { e.preventDefault(); document.execCommand("bold"); }} className="toolbar-btn" style={activeBold ? { background: "#1e293b", color: "#fff", borderColor: "#1e293b" } : undefined}><BoldIcon /></button></Tooltip>
+              <Tooltip title="Italic (Ctrl+I)"><button onMouseDown={(e) => { e.preventDefault(); document.execCommand("italic"); }} className="toolbar-btn" style={activeItalic ? { background: "#1e293b", color: "#fff", borderColor: "#1e293b" } : undefined}><ItalicIcon /></button></Tooltip>
+              <Tooltip title="Underline (Ctrl+U)"><button onMouseDown={(e) => { e.preventDefault(); document.execCommand("underline"); }} className="toolbar-btn" style={activeUnderline ? { background: "#1e293b", color: "#fff", borderColor: "#1e293b" } : undefined}><UnderlineIcon /></button></Tooltip>
+              <Tooltip title="Strikethrough"><button onMouseDown={(e) => { e.preventDefault(); document.execCommand("strikeThrough"); }} className="toolbar-btn" style={activeStrike ? { background: "#1e293b", color: "#fff", borderColor: "#1e293b" } : undefined}><StrikeIcon /></button></Tooltip>
             </div>
 
 
@@ -789,7 +809,15 @@ const CDPEditorInner = (
 
         {/* View toggles — hidden when hideViewToggles so parent can use external buttons */}
         {!hideViewToggles && (
-          <div className="ml-auto flex items-center gap-1 flex-shrink-0 pl-2">
+          <div className="ml-auto flex items-center gap-2 flex-shrink-0 pl-2">
+            {/* Word / char count — only meaningful in the WYSIWYG editor */}
+            {!showCodeEditor && !showPreview && (
+              <Tooltip title={`${charCount.toLocaleString()} characters`}>
+                <span className="text-xs tabular-nums select-none" style={{ color: "#94a3b8", letterSpacing: 0.1 }}>
+                  {wordCount.toLocaleString()} {wordCount === 1 ? "word" : "words"}
+                </span>
+              </Tooltip>
+            )}
             {enableCodeEditor && (
               <button
                 onClick={() => { setShowCodeEditor((v) => !v); setShowPreview(false); }}
@@ -871,6 +899,32 @@ const CDPEditorInner = (
                   <Dropdown menu={buttonMenuConfig} trigger={["click"]} open onOpenChange={(v) => { if (!v) setSelectedButton(null); }}>
                     <span />
                   </Dropdown>
+                </div>
+              )}
+
+              {/* Floating "Button" selection chip */}
+              {selectedButton && (
+                <div
+                  style={{
+                    position: "absolute",
+                    top: btnLabelPos.top,
+                    left: btnLabelPos.left,
+                    transform: "translateX(-50%)",
+                    zIndex: 998,
+                    background: "#4f46e5",
+                    color: "#fff",
+                    fontSize: 10,
+                    padding: "2px 8px",
+                    borderRadius: 999,
+                    pointerEvents: "none",
+                    whiteSpace: "nowrap",
+                    fontWeight: 600,
+                    lineHeight: 1.6,
+                    letterSpacing: 0.3,
+                    boxShadow: "0 2px 8px rgba(79,70,229,0.35)",
+                  }}
+                >
+                  ✎ Button
                 </div>
               )}
 
