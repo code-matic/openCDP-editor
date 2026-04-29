@@ -211,6 +211,18 @@ const InlineIcon = () => (
     <line x1="12" y1="22.08" x2="12" y2="12" />
   </svg>
 );
+const CodeIcon = () => (
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="16 18 22 12 16 6" />
+    <polyline points="8 6 2 12 8 18" />
+  </svg>
+);
+const MobileIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="5" y="2" width="14" height="20" rx="2" ry="2" />
+    <circle cx="12" cy="17" r="1" fill="currentColor" stroke="none" />
+  </svg>
+);
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
@@ -654,26 +666,24 @@ const CDPEditorInner = (
 
   // ─────────────────────────────────────────────────────────────────────────
   return (
-    <div className={`bg-white border rounded-md overflow-hidden flex flex-col ${className}`} style={{ minWidth: 400 }}>
+    <div className={`bg-white border rounded-xl overflow-hidden flex flex-col ${className}`} style={{ minWidth: 400 }}>
 
-      {/* ── Single unified toolbar ───────────────────────────────────────── */}
+      {/* ── Two-row toolbar ──────────────────────────────────────────────── */}
       <div
-        className={`flex items-center gap-0.5 px-2 py-1.5 border-b bg-gray-50 overflow-x-auto ${readOnly && !showCodeEditor && !showPreview ? "pointer-events-none opacity-50" : ""}`}
-        style={{ scrollbarWidth: "none" }}
+        className={`bg-white flex flex-col ${readOnly && !showCodeEditor && !showPreview ? "pointer-events-none opacity-50" : ""}`}
+        style={{ boxShadow: "0 1px 0 #e5e7eb" }}
       >
-        {/* Formatting buttons — hidden when Monaco/Preview is active */}
+        {/* ── Row 1: Text formatting (hidden in code / preview mode) ───── */}
         {!showCodeEditor && !showPreview && (
-          <>
-            {/* Undo / Redo */}
+          <div className="flex items-center gap-0.5 px-2 pt-1.5 pb-1 overflow-x-auto" style={{ scrollbarWidth: "none" }}>
+
             <div className="flex items-center gap-1.5">
               <Tooltip title="Undo"><button onMouseDown={(e) => { e.preventDefault(); document.execCommand("undo"); }} className="toolbar-btn"><UndoIcon /></button></Tooltip>
               <Tooltip title="Redo"><button onMouseDown={(e) => { e.preventDefault(); document.execCommand("redo"); }} className="toolbar-btn"><RedoIcon /></button></Tooltip>
             </div>
 
+            <div className="w-px h-5 bg-gray-200 mx-1.5 flex-shrink-0" />
 
-            <div className="w-px h-4 bg-gray-300 mx-1 flex-shrink-0" />
-
-            {/* Headings */}
             <div className="flex items-center gap-1.5">
               {(["h1", "h2", "h3"] as const).map((tag, i) => {
                 const Icon = [H1Icon, H2Icon, H3Icon][i];
@@ -696,9 +706,8 @@ const CDPEditorInner = (
               })}
             </div>
 
-            <div className="w-px h-4 bg-gray-300 mx-1 flex-shrink-0" />
+            <div className="w-px h-5 bg-gray-200 mx-1.5 flex-shrink-0" />
 
-            {/* Basic formatting */}
             <div className="flex items-center gap-1.5">
               <Tooltip title="Bold (Ctrl+B)"><button onMouseDown={(e) => { e.preventDefault(); document.execCommand("bold"); }} className="toolbar-btn" style={activeBold ? { background: "#1e293b", color: "#fff", borderColor: "#1e293b" } : undefined}><BoldIcon /></button></Tooltip>
               <Tooltip title="Italic (Ctrl+I)"><button onMouseDown={(e) => { e.preventDefault(); document.execCommand("italic"); }} className="toolbar-btn" style={activeItalic ? { background: "#1e293b", color: "#fff", borderColor: "#1e293b" } : undefined}><ItalicIcon /></button></Tooltip>
@@ -706,10 +715,8 @@ const CDPEditorInner = (
               <Tooltip title="Strikethrough"><button onMouseDown={(e) => { e.preventDefault(); document.execCommand("strikeThrough"); }} className="toolbar-btn" style={activeStrike ? { background: "#1e293b", color: "#fff", borderColor: "#1e293b" } : undefined}><StrikeIcon /></button></Tooltip>
             </div>
 
+            <div className="w-px h-5 bg-gray-200 mx-1.5 flex-shrink-0" />
 
-            <div className="w-px h-4 bg-gray-300 mx-1 flex-shrink-0" />
-
-            {/* Lists + Link */}
             <div className="flex items-center gap-1.5">
               <Tooltip title="Numbered List"><button onMouseDown={(e) => { e.preventDefault(); document.execCommand("insertOrderedList"); setTimeout(() => syncEditorContentToState(setIframeContent), 0); }} className="toolbar-btn"><OLIcon /></button></Tooltip>
               <Tooltip title="Bullet List"><button onMouseDown={(e) => { e.preventDefault(); document.execCommand("insertUnorderedList"); setTimeout(() => syncEditorContentToState(setIframeContent), 0); }} className="toolbar-btn"><ULIcon /></button></Tooltip>
@@ -728,114 +735,115 @@ const CDPEditorInner = (
               </Tooltip>
             </div>
 
-
-            <div className="w-px h-4 bg-gray-300 mx-1 flex-shrink-0" />
-
-            {/* Alignment */}
-            <div className="flex items-center gap-1.5">
-              <Tooltip title="Align Left"><button onClick={() => applyAlignmentToSelection("left", handleEditorChange)} className="toolbar-btn"><AlignLeftIcon /></button></Tooltip>
-              <Tooltip title="Align Center"><button onClick={() => applyAlignmentToSelection("center", handleEditorChange)} className="toolbar-btn"><AlignCenterIcon /></button></Tooltip>
-              <Tooltip title="Align Right"><button onClick={() => applyAlignmentToSelection("right", handleEditorChange)} className="toolbar-btn"><AlignRightIcon /></button></Tooltip>
-            </div>
-
-            <div className="w-px h-4 bg-gray-300 mx-1 flex-shrink-0" />
-
-            {/* Insert Image */}
-            <div className="flex items-center gap-1.5">
-              <Tooltip title="Insert Image"><button onClick={handleOpenImageModal} className="toolbar-btn"><ImageIcon /></button></Tooltip>
-
-              {/* Insert Button */}
-              <Tooltip title="Insert Button"><button onClick={insertButtonAtCursor} className="toolbar-btn"><ButtonIcon /></button></Tooltip>
-            </div>
-
-
-            <div className="w-px h-4 bg-gray-300 mx-1 flex-shrink-0" />
-
-            {/* Text colour */}
-            <div className="flex items-center gap-1.5">
-              <Tooltip title="Text Color">
-                <ColorPicker
-                  value={tempColor}
-                  open={pickerOpen}
-                  onOpenChange={(open) => {
-                    setPickerOpen(open);
-                    if (open) { saveSelectionBeforeDropdown(); setTempColor(selectedColor); }
-                  }}
-                  onChange={(c) => setTempColor(c.toHexString())}
-                  panelRender={(panel) => (
-                    <div>
-                      {panel}
-                      <button
-                        className="border text-xs px-2 py-1 mt-1 rounded hover:bg-gray-50"
-                        onClick={() => { applyHighlightColor(tempColor); setPickerOpen(false); }}
-                      >
-                        Apply
-                      </button>
-                    </div>
-                  )}
-                >
-                  <button type="button" className="toolbar-btn">
-                    <div style={{ width: 18, height: 18, backgroundColor: selectedColor, borderRadius: 2, border: "1px solid #ccc" }} />
-                  </button>
-                </ColorPicker>
-              </Tooltip>
-            </div>
-            <div className="w-px h-4 bg-gray-300 mx-1 flex-shrink-0" />
-            {/* Font family */}
-            <div className="flex items-center gap-1.5">
-              <Tooltip title="Font Family">
-                <Dropdown menu={fontMenu} trigger={["click"]} onOpenChange={(open) => { if (open) saveSelectionBeforeDropdown(); }}>
-                  <button className="toolbar-btn px-2 text-xs font-medium flex items-center gap-0.5">
-                    Aa <ChevronIcon />
-                  </button>
-                </Dropdown>
-              </Tooltip>
-            </div>
-            <div className="w-px h-4 bg-gray-300 mx-1 flex-shrink-0" />
-          </>
-        )}
-
-        {/* Inline CSS (only in code editor mode when needed); hidden when hideViewToggles */}
-        {!hideViewToggles && showCodeEditor && requiresInlining && (
-          <Tooltip title="Inline all <style> tags into element attributes for email clients">
-            <button
-              onClick={triggerInlining}
-              className="flex items-center gap-1 text-xs px-2.5 py-1.5 rounded bg-orange-500 hover:bg-orange-600 text-white animate-pulse flex-shrink-0"
-            >
-              <InlineIcon /> Inline CSS
-            </button>
-          </Tooltip>
-        )}
-
-        {/* View toggles — hidden when hideViewToggles so parent can use external buttons */}
-        {!hideViewToggles && (
-          <div className="ml-auto flex items-center gap-2 flex-shrink-0 pl-2">
-            {/* Word / char count — only meaningful in the WYSIWYG editor */}
-            {!showCodeEditor && !showPreview && (
-              <Tooltip title={`${charCount.toLocaleString()} characters`}>
-                <span className="text-xs tabular-nums select-none" style={{ color: "#94a3b8", letterSpacing: 0.1 }}>
-                  {wordCount.toLocaleString()} {wordCount === 1 ? "word" : "words"}
-                </span>
-              </Tooltip>
-            )}
-            {enableCodeEditor && (
-              <button
-                onClick={() => { setShowCodeEditor((v) => !v); setShowPreview(false); }}
-                className={`text-xs px-2.5 py-1.5 rounded border transition-colors whitespace-nowrap ${showCodeEditor ? "bg-gray-800 text-white border-gray-800" : "border-gray-300 text-gray-600 hover:bg-gray-100"}`}
-              >
-                {showCodeEditor ? "View Editor" : "View HTML"}
-              </button>
-            )}
-            {enablePreview && (
-              <button
-                onClick={() => { setShowPreview((v) => !v); setShowCodeEditor(false); }}
-                className={`text-xs px-2.5 py-1.5 rounded border transition-colors whitespace-nowrap ${showPreview ? "bg-indigo-600 text-white border-indigo-600" : "border-gray-300 text-gray-600 hover:bg-gray-100"}`}
-              >
-                {showPreview ? "Hide Preview" : "Preview"}
-              </button>
-            )}
           </div>
         )}
+
+        {/* ── Row 2: Insert, style, and view controls ───────────────────── */}
+        <div className="flex items-center gap-0.5 px-2 py-1.5 overflow-x-auto" style={{ scrollbarWidth: "none" }}>
+
+          {!showCodeEditor && !showPreview && (
+            <>
+              {/* Alignment */}
+              <div className="flex items-center gap-1.5">
+                <Tooltip title="Align Left"><button onClick={() => applyAlignmentToSelection("left", handleEditorChange)} className="toolbar-btn"><AlignLeftIcon /></button></Tooltip>
+                <Tooltip title="Align Center"><button onClick={() => applyAlignmentToSelection("center", handleEditorChange)} className="toolbar-btn"><AlignCenterIcon /></button></Tooltip>
+                <Tooltip title="Align Right"><button onClick={() => applyAlignmentToSelection("right", handleEditorChange)} className="toolbar-btn"><AlignRightIcon /></button></Tooltip>
+              </div>
+
+              <div className="w-px h-5 bg-gray-200 mx-1.5 flex-shrink-0" />
+
+              {/* Insert */}
+              <div className="flex items-center gap-1.5">
+                <Tooltip title="Insert Image"><button onClick={handleOpenImageModal} className="toolbar-btn"><ImageIcon /></button></Tooltip>
+                <Tooltip title="Insert Button"><button onClick={insertButtonAtCursor} className="toolbar-btn"><ButtonIcon /></button></Tooltip>
+              </div>
+
+              <div className="w-px h-5 bg-gray-200 mx-1.5 flex-shrink-0" />
+
+              {/* Text colour */}
+              <div className="flex items-center gap-1.5">
+                <Tooltip title="Text Color">
+                  <ColorPicker
+                    value={tempColor}
+                    open={pickerOpen}
+                    onOpenChange={(open) => {
+                      setPickerOpen(open);
+                      if (open) { saveSelectionBeforeDropdown(); setTempColor(selectedColor); }
+                    }}
+                    onChange={(c) => setTempColor(c.toHexString())}
+                    panelRender={(panel) => (
+                      <div>
+                        {panel}
+                        <button
+                          className="border text-xs px-2 py-1 mt-1 rounded hover:bg-gray-50"
+                          onClick={() => { applyHighlightColor(tempColor); setPickerOpen(false); }}
+                        >
+                          Apply
+                        </button>
+                      </div>
+                    )}
+                  >
+                    <button type="button" className="toolbar-btn">
+                      <div style={{ width: 18, height: 18, backgroundColor: selectedColor, borderRadius: 2, border: "1px solid #e5e7eb" }} />
+                    </button>
+                  </ColorPicker>
+                </Tooltip>
+              </div>
+
+              {/* Font family */}
+              <div className="flex items-center gap-1.5">
+                <Tooltip title="Font Family">
+                  <Dropdown menu={fontMenu} trigger={["click"]} onOpenChange={(open) => { if (open) saveSelectionBeforeDropdown(); }}>
+                    <button className="toolbar-btn px-2 text-xs font-medium flex items-center gap-0.5">
+                      Aa <ChevronIcon />
+                    </button>
+                  </Dropdown>
+                </Tooltip>
+              </div>
+            </>
+          )}
+
+          {/* Inline CSS (only in code editor mode when needed) */}
+          {!hideViewToggles && showCodeEditor && requiresInlining && (
+            <Tooltip title="Inline all <style> tags into element attributes for email clients">
+              <button
+                onClick={triggerInlining}
+                className="flex items-center gap-1 text-xs px-2.5 py-1.5 rounded bg-orange-500 hover:bg-orange-600 text-white animate-pulse flex-shrink-0"
+              >
+                <InlineIcon /> Inline CSS
+              </button>
+            </Tooltip>
+          )}
+
+          {/* View toggles */}
+          {!hideViewToggles && (
+            <div className="ml-auto flex items-center gap-1 flex-shrink-0">
+              {enableCodeEditor && (
+                <Tooltip title="Toggle HTML source editor">
+                  <button
+                    onClick={() => { setShowCodeEditor((v) => !v); setShowPreview(false); }}
+                    className={`flex items-center gap-1.5 text-xs font-medium px-2 py-1 rounded transition-colors whitespace-nowrap ${showCodeEditor ? "bg-gray-800 text-white" : "text-gray-500 hover:bg-gray-100 hover:text-gray-700"}`}
+                  >
+                    <CodeIcon />
+                    {showCodeEditor ? "Editor" : "HTML"}
+                  </button>
+                </Tooltip>
+              )}
+              {enablePreview && (
+                <Tooltip title="Toggle phone preview">
+                  <button
+                    onClick={() => { setShowPreview((v) => !v); setShowCodeEditor(false); }}
+                    className={`flex items-center gap-1.5 text-xs font-medium px-2 py-1 rounded transition-colors whitespace-nowrap ${showPreview ? "bg-indigo-600 text-white" : "text-gray-500 hover:bg-gray-100 hover:text-gray-700"}`}
+                  >
+                    <MobileIcon />
+                    {showPreview ? "Close" : "Preview"}
+                  </button>
+                </Tooltip>
+              )}
+            </div>
+          )}
+
+        </div>
       </div>
 
       {/* ── Body: editor ────────────────────────────────────────────────── */}
@@ -955,6 +963,23 @@ const CDPEditorInner = (
             </div>
           )}
         </div>
+      </div>
+
+      {/* ── Status bar ──────────────────────────────────────────────────── */}
+      <div
+        className="flex items-center justify-between px-4 bg-white select-none"
+        style={{ borderTop: "1px solid #e5e7eb", minHeight: 28 }}
+      >
+        <span className="text-xs" style={{ color: "#cbd5e1" }}>
+          {showCodeEditor ? "HTML source" : showPreview ? "Phone preview" : "Rich text"}
+        </span>
+        {!showCodeEditor && !showPreview && (
+          <Tooltip title={`${charCount.toLocaleString()} characters`}>
+            <span className="text-xs tabular-nums cursor-default" style={{ color: "#cbd5e1" }}>
+              {wordCount.toLocaleString()} {wordCount === 1 ? "word" : "words"} · {charCount.toLocaleString()} chars
+            </span>
+          </Tooltip>
+        )}
       </div>
 
       {/* ── Modals (only when not using custom image modal) ────────────────── */}
