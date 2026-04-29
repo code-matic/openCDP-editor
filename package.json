@@ -1,6 +1,6 @@
 {
   "name": "@codematic.io/cdp-editor",
-  "version": "4.0.2",
+  "version": "4.1.0",
   "description": "A powerful rich-text email editor with HTML code view, template variables, image management, and CSS inlining",
   "type": "module",
   "main": "./dist/email-editor.umd.cjs",
@@ -23,6 +23,10 @@
     "type-check": "tsc --noEmit"
   },
   "homepage": "https://cdp-editor-064.web.app",
+  "repository": {	
+    "type": "git",
+    "url": "https://github.com/code-matic/openCDP-editor"
+  },
   "keywords": [
     "React",
     "Rich Text Editor",
