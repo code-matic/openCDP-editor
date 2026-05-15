@@ -577,3 +577,28 @@ export function insertTextIntoEditorAtSelection(
   setIframeContent(editor.innerHTML);
   onAttributeAdded?.();
 }
+
+/** Replace an arbitrary range inside the rich-text editor and sync React state (body + full HTML). */
+export function replaceEditorRangeWithText(
+  range: Range,
+  text: string,
+  handleEditorChange: (bodyHtml: string) => void
+): void {
+  const editor = getEditorElement();
+  if (!editor || !editor.contains(range.commonAncestorContainer)) return;
+
+  range.deleteContents();
+  const textNode = document.createTextNode(text);
+  range.insertNode(textNode);
+
+  const selection = window.getSelection();
+  if (selection) {
+    const nr = document.createRange();
+    nr.setStartAfter(textNode);
+    nr.collapse(true);
+    selection.removeAllRanges();
+    selection.addRange(nr);
+  }
+
+  handleEditorChange(editor.innerHTML);
+}

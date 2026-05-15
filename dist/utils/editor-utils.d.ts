@@ -33,3 +33,5 @@ export declare function insertButtonAtCursorInEditor(buttonText: string, buttonU
     current: Range | null;
 }, handleEditorChange?: (html: string) => void): void;
 export declare function insertTextIntoEditorAtSelection(formattedText: string, setIframeContent: (v: string) => void, onAttributeAdded?: () => void): void;
+/** Replace an arbitrary range inside the rich-text editor and sync React state (body + full HTML). */
+export declare function replaceEditorRangeWithText(range: Range, text: string, handleEditorChange: (bodyHtml: string) => void): void;

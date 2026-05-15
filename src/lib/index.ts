@@ -21,6 +21,7 @@ export {
   insertImageAtCursorInEditor,
   insertButtonAtCursorInEditor,
   insertTextIntoEditorAtSelection,
+  replaceEditorRangeWithText,
 } from "./utils/editor-utils";
 
 export { handleInlineCSS, needsInliningDetailed } from "./utils/inliner";
@@ -37,4 +38,5 @@ export type {
   ImageAsset,
   VariableGroup,
   Variable,
+  InsertableAttribute,
 } from "./types";

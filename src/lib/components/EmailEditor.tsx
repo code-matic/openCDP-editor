@@ -6,7 +6,9 @@ import React, {
   useMemo,
   useImperativeHandle,
   forwardRef,
+  useCallback,
 } from "react";
+import { createPortal } from "react-dom";
 import { Dropdown, ColorPicker, Tooltip } from "antd";
 import { toast } from "sonner";
 
@@ -36,6 +38,8 @@ import {
   insertImageAtCursorInEditor,
   insertButtonAtCursorInEditor,
   insertTextIntoEditorAtSelection,
+  getEditorElement,
+  replaceEditorRangeWithText,
   updateButtonStyleInEditor,
   updateButtonTextColorInEditor,
   updateButtonBorderRadiusInEditor,
@@ -49,9 +53,15 @@ import {
 } from "../utils/editor-utils";
 import { handleInlineCSS, needsInliningDetailed } from "../utils/inliner";
 import liquidEngine from "../utils/liquid-engine";
-import type { CDPEditorProps, CDPEditorHandle } from "../types";
+import {
+  parseMentionAtCaret,
+  resolveTextOffsetInEditor,
+  filterInsertableAttributes,
+} from "../utils/mention-autocomplete";
+import type { CDPEditorProps, CDPEditorHandle, InsertableAttribute } from "../types";
 
-// ─── Inline SVG icons ─────────────────────────────────────────────────────────
+/** Max height of the @-mention list; inner panel scrolls. */
+const MENTION_POPOVER_MAX_HEIGHT_PX = 280;
 
 // ─── Inline SVG icons ─────────────────────────────────────────────────────────
 
@@ -247,6 +257,7 @@ const CDPEditorInner = (
     onShowPreviewChange,
     hideViewToggles = false,
     onOpenImageModal,
+    insertableAttributes,
   }: CDPEditorProps,
   ref: React.ForwardedRef<CDPEditorHandle>
 ) => {
@@ -304,6 +315,18 @@ const CDPEditorInner = (
   const [selectedButton, setSelectedButton] = useState<{ element: HTMLAnchorElement; x: number; y: number } | null>(null);
   const [btnMenuPos, setBtnMenuPos] = useState({ top: 0, left: 0 });
   const [btnLabelPos, setBtnLabelPos] = useState({ top: 0, left: 0 });
+
+  type MentionMenuState = {
+    group: "customer" | "event" | "both";
+    query: string;
+    items: InsertableAttribute[];
+    highlightIndex: number;
+    left: number;
+    top: number;
+  };
+  const [mentionMenu, setMentionMenu] = useState<MentionMenuState | null>(null);
+  const insertableAttrsRef = useRef(insertableAttributes);
+  insertableAttrsRef.current = insertableAttributes;
 
   const EditorRef = useRef<HTMLDivElement>(null);
   const lastSelectionRef = useRef<Range | null>(null);
@@ -505,6 +528,129 @@ const CDPEditorInner = (
     setIframeContent(full);
     onChange?.(full);
   };
+
+  const handleEditorChangeRef = useRef(handleEditorChange);
+  handleEditorChangeRef.current = handleEditorChange;
+
+  const applyMentionChoice = useCallback((liquidValue: string) => {
+    const editor = getEditorElement();
+    const sel = window.getSelection();
+    if (!editor || !sel || sel.rangeCount === 0) return;
+    const anchor = sel.anchorNode;
+    if (!anchor) return;
+    const offset = sel.anchorOffset;
+    const parsed = parseMentionAtCaret(editor, anchor, offset);
+    if (!parsed) return;
+    const startPos = resolveTextOffsetInEditor(editor, parsed.startOffset);
+    if (!startPos || anchor.nodeType !== Node.TEXT_NODE) return;
+    const range = document.createRange();
+    range.setStart(startPos.node, startPos.offset);
+    range.setEnd(anchor, offset);
+    replaceEditorRangeWithText(range, liquidValue, handleEditorChangeRef.current);
+  }, []);
+
+  // ── @customer / @event inline attribute picker ────────────────────────────
+  useEffect(() => {
+    if (!insertableAttributes?.length || readOnly || showCodeEditor || showPreview) {
+      setMentionMenu(null);
+      return;
+    }
+    const refresh = () => {
+      const attrs = insertableAttrsRef.current;
+      if (!attrs?.length) {
+        setMentionMenu(null);
+        return;
+      }
+      const editor = getEditorElement();
+      const sel = window.getSelection();
+      if (!editor || !sel || sel.rangeCount === 0 || !sel.isCollapsed) {
+        setMentionMenu(null);
+        return;
+      }
+      const anchor = sel.anchorNode;
+      const offset = sel.anchorOffset;
+      if (!anchor || !editor.contains(anchor)) {
+        setMentionMenu(null);
+        return;
+      }
+      if (anchor.nodeType !== Node.TEXT_NODE) {
+        setMentionMenu(null);
+        return;
+      }
+      const parsed = parseMentionAtCaret(editor, anchor, offset);
+      if (!parsed) {
+        setMentionMenu(null);
+        return;
+      }
+      const items = filterInsertableAttributes(attrs, parsed.group, parsed.query);
+      const startPos = resolveTextOffsetInEditor(editor, parsed.startOffset);
+      if (!startPos) {
+        setMentionMenu(null);
+        return;
+      }
+      const range = document.createRange();
+      range.setStart(startPos.node, startPos.offset);
+      range.setEnd(anchor, offset);
+      const rect = range.getBoundingClientRect();
+      setMentionMenu((prev) => {
+        const sameContext = prev && prev.group === parsed.group && prev.query === parsed.query;
+        return {
+          group: parsed.group,
+          query: parsed.query,
+          items,
+          highlightIndex: sameContext
+            ? Math.min(prev.highlightIndex, Math.max(0, items.length - 1))
+            : 0,
+          left: rect.left,
+          top: rect.bottom + 4,
+        };
+      });
+    };
+    document.addEventListener("input", refresh, true);
+    document.addEventListener("keyup", refresh, true);
+    document.addEventListener("selectionchange", refresh);
+    return () => {
+      document.removeEventListener("input", refresh, true);
+      document.removeEventListener("keyup", refresh, true);
+      document.removeEventListener("selectionchange", refresh);
+    };
+  }, [insertableAttributes, readOnly, showCodeEditor, showPreview]);
+
+  useEffect(() => {
+    if (!mentionMenu) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        setMentionMenu(null);
+        return;
+      }
+      if (e.key === "ArrowDown") {
+        e.preventDefault();
+        setMentionMenu((m) =>
+          m && m.items.length
+            ? { ...m, highlightIndex: Math.min(m.items.length - 1, m.highlightIndex + 1) }
+            : m
+        );
+        return;
+      }
+      if (e.key === "ArrowUp") {
+        e.preventDefault();
+        setMentionMenu((m) => (m && m.items.length ? { ...m, highlightIndex: Math.max(0, m.highlightIndex - 1) } : m));
+        return;
+      }
+      if (e.key === "Enter" || (e.key === "Tab" && !e.shiftKey)) {
+        e.preventDefault();
+        setMentionMenu((m) => {
+          if (!m || m.items.length === 0) return null;
+          const item = m.items[m.highlightIndex];
+          if (item) applyMentionChoice(item.value);
+          return null;
+        });
+      }
+    };
+    document.addEventListener("keydown", onKey, true);
+    return () => document.removeEventListener("keydown", onKey, true);
+  }, [mentionMenu, applyMentionChoice]);
 
   // ── Colour picker ────────────────────────────────────────────────────────
   const saveSelectionBeforeDropdown = () => {
@@ -1049,6 +1195,67 @@ const CDPEditorInner = (
         }}
         onClose={() => { setShowLinkModal(false); setLinkSelection(null); }}
       />
+
+      {mentionMenu &&
+        typeof document !== "undefined" &&
+        createPortal(
+          <div
+            role="listbox"
+            aria-label={
+              mentionMenu.group === "customer"
+                ? "Customer attributes"
+                : mentionMenu.group === "event"
+                  ? "Event attributes"
+                  : "Customer and event attributes"
+            }
+            className="flex flex-col overflow-hidden rounded-lg border border-gray-200 bg-white text-sm shadow-xl"
+            style={{
+              position: "fixed",
+              zIndex: 10050,
+              left: mentionMenu.left,
+              top: mentionMenu.top,
+              minWidth: 220,
+              maxWidth: 320,
+              maxHeight: MENTION_POPOVER_MAX_HEIGHT_PX,
+            }}
+            onMouseDown={(e) => e.preventDefault()}
+          >
+            <div
+              className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden py-1"
+              style={{
+                maxHeight: MENTION_POPOVER_MAX_HEIGHT_PX,
+                overscrollBehavior: "contain",
+                WebkitOverflowScrolling: "touch",
+              }}
+            >
+            {mentionMenu.items.length === 0 ? (
+              <div className="px-3 py-2 text-xs text-gray-500">No matching attributes</div>
+            ) : (
+              mentionMenu.items.map((item, i) => (
+                <button
+                  key={item.value}
+                  type="button"
+                  role="option"
+                  aria-selected={i === mentionMenu.highlightIndex}
+                  className={`flex w-full flex-col items-start px-3 py-2 text-left text-xs ${
+                    i === mentionMenu.highlightIndex ? "bg-indigo-50 text-indigo-900" : "text-gray-800 hover:bg-gray-50"
+                  }`}
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    applyMentionChoice(item.value);
+                    setMentionMenu(null);
+                  }}
+                  onMouseEnter={() => setMentionMenu((m) => (m ? { ...m, highlightIndex: i } : m))}
+                >
+                  <span className="font-medium">{item.label}</span>
+                  <span className="mt-0.5 font-mono text-[10px] text-gray-500">{item.value}</span>
+                </button>
+              ))
+            )}
+            </div>
+          </div>,
+          document.body
+        )}
     </div>
   );
 };

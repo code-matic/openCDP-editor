@@ -23,6 +23,12 @@ export interface Variable {
   type: "string" | "number" | "object";
 }
 
+/** Sidebar / @-mention insertable Liquid snippets (label for UI, value inserted at cursor). */
+export interface InsertableAttribute {
+  label: string;
+  value: string;
+}
+
 export interface CDPEditorProps {
   /** The HTML string value of the editor */
   value?: string;
@@ -72,6 +78,12 @@ export interface CDPEditorProps {
   onShowPreviewChange?: (show: boolean) => void;
   /** When true, the package does not render View HTML, Preview, or Inline CSS buttons. Use ref.inlineCss() for your Inline CSS button. */
   hideViewToggles?: boolean;
+
+  /**
+   * Same entries you show in an external attribute picker. When set, typing `@customer` or `@event`
+   * in the rich-text editor opens an inline list (filtered by `{{ customer.* }}` / `{{ event.* }}`).
+   */
+  insertableAttributes?: InsertableAttribute[];
 
   /**
    * When provided, the package does not show its own image picker modal.

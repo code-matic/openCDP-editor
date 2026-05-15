@@ -4,9 +4,9 @@ export { default as MonacoEditorWrapper } from './components/MonacoEditorWrapper
 export { default as PhonePreview } from './components/PhonePreview';
 export { default as InputModal } from './components/InputModal';
 export { default as ImagePickerModal } from './components/ImagePickerModal';
-export { validateLiquidTemplate, validateCurrencyCodes, replaceBodyContent, wrapEmailBodyHtml, changeHighlightColor, changeFontFamily, normalizeColor, insertImageAtCursorInEditor, insertButtonAtCursorInEditor, insertTextIntoEditorAtSelection, } from './utils/editor-utils';
+export { validateLiquidTemplate, validateCurrencyCodes, replaceBodyContent, wrapEmailBodyHtml, changeHighlightColor, changeFontFamily, normalizeColor, insertImageAtCursorInEditor, insertButtonAtCursorInEditor, insertTextIntoEditorAtSelection, replaceEditorRangeWithText, } from './utils/editor-utils';
 export { handleInlineCSS, needsInliningDetailed } from './utils/inliner';
 export { isValidCurrencyCode, VALID_CURRENCY_CODES, COMMON_CURRENCY_CODES } from './utils/currency-codes';
 export { default as liquidEngine } from './utils/liquid-engine';
 export { useOnlineStatus } from './hooks/useOnlineStatus';
-export type { CDPEditorProps, CDPEditorHandle, ImageAsset, VariableGroup, Variable, } from './types';
+export type { CDPEditorProps, CDPEditorHandle, ImageAsset, VariableGroup, Variable, InsertableAttribute, } from './types';

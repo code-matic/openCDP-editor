@@ -94,7 +94,7 @@ const HOW_TO_STEPS = [
   {
     step: "03",
     title: "Inject dynamic attributes",
-    desc: "Place your cursor where you want a variable, then click an attribute from the sidebar (e.g. First Name). The tag is inserted at the cursor and will be replaced with real data at send time.",
+    desc: "Place your cursor where you want a variable, then type @customer or @event to pick from the same list as the sidebar, or click an attribute in the sidebar. Tags are replaced with real data at send time.",
   },
   {
     step: "04",
@@ -475,6 +475,7 @@ export default function App() {
                 onFetchImages={handleFetchImages}
                 onUploadImage={handleUploadImage}
                 onDeleteImage={handleDeleteImage}
+                insertableAttributes={DEMO_ATTRIBUTES}
                 enablePreview
                 enableCodeEditor
               />
