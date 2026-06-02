@@ -88,45 +88,31 @@ export function restoreSelectionFromMarker(marker: HTMLElement | null): void {
   marker.parentNode?.removeChild(marker);
 }
 
-export function applyAlignmentToSelection(
-  alignment: "left" | "right" | "center",
-  handleEditorChange: (html: string) => void
-): void {
-  const editor = getEditorElement();
-  if (!editor) return;
+const BLOCK_TAGS = new Set(["p", "div", "li", "section", "h1", "h2", "h3", "h4", "h5", "h6", "blockquote", "pre"]);
 
-  const selection = window.getSelection();
-  if (!selection || selection.rangeCount === 0) return;
-
-  const range = selection.getRangeAt(0);
-  if (!editor.contains(range.commonAncestorContainer)) return;
-
-  const BLOCK_TAGS = new Set(["p", "div", "li", "section", "h1", "h2", "h3", "h4", "h5", "h6", "blockquote", "pre"]);
-
-  const getBlockElement = (node: Node | null): HTMLElement | null => {
-    while (node && node !== editor) {
-      if (node instanceof HTMLElement) {
-        const tag = node.tagName.toLowerCase();
-        const display = window.getComputedStyle(node).display;
-        if (BLOCK_TAGS.has(tag) || display === "block" || display === "list-item" || display === "table") {
-          return node;
-        }
+function getBlockElement(editor: HTMLElement, node: Node | null): HTMLElement | null {
+  while (node && node !== editor) {
+    if (node instanceof HTMLElement) {
+      const tag = node.tagName.toLowerCase();
+      const display = window.getComputedStyle(node).display;
+      if (BLOCK_TAGS.has(tag) || display === "block" || display === "list-item" || display === "table") {
+        return node;
       }
-      node = node.parentNode;
     }
-    return null;
-  };
+    node = node.parentNode;
+  }
+  return null;
+}
 
-  // Collect all block elements touched by the selection range
+function collectAffectedBlocks(editor: HTMLElement, range: Range): Set<HTMLElement> {
   const affectedBlocks = new Set<HTMLElement>();
 
-  const startBlock = getBlockElement(range.startContainer);
+  const startBlock = getBlockElement(editor, range.startContainer);
   if (startBlock) affectedBlocks.add(startBlock);
 
-  const endBlock = getBlockElement(range.endContainer);
+  const endBlock = getBlockElement(editor, range.endContainer);
   if (endBlock) affectedBlocks.add(endBlock);
 
-  // Walk all nodes inside the range to catch any blocks fully contained within it
   const walker = document.createTreeWalker(
     range.commonAncestorContainer,
     NodeFilter.SHOW_ELEMENT,
@@ -139,10 +125,43 @@ export function applyAlignmentToSelection(
 
   let node: Node | null = walker.nextNode();
   while (node) {
-    const block = getBlockElement(node);
+    const block = getBlockElement(editor, node);
     if (block) affectedBlocks.add(block);
     node = walker.nextNode();
   }
+
+  return affectedBlocks;
+}
+
+function collapseSelectionToLastBlock(
+  editor: HTMLElement,
+  selection: Selection,
+  lastBlock: HTMLElement | null
+): void {
+  if (!lastBlock) return;
+  const collapsed = document.createRange();
+  collapsed.selectNodeContents(lastBlock);
+  collapsed.collapse(false);
+  selection.removeAllRanges();
+  selection.addRange(collapsed);
+  lastBlock.focus?.();
+  editor.focus();
+}
+
+export function applyAlignmentToSelection(
+  alignment: "left" | "right" | "center" | "justify",
+  handleEditorChange: (html: string) => void
+): void {
+  const editor = getEditorElement();
+  if (!editor) return;
+
+  const selection = window.getSelection();
+  if (!selection || selection.rangeCount === 0) return;
+
+  const range = selection.getRangeAt(0);
+  if (!editor.contains(range.commonAncestorContainer)) return;
+
+  const affectedBlocks = collectAffectedBlocks(editor, range);
 
   let lastBlock: HTMLElement | null = null;
   affectedBlocks.forEach((block) => {
@@ -150,18 +169,36 @@ export function applyAlignmentToSelection(
     lastBlock = block;
   });
 
-  // Collapse the selection to the end of the last aligned block so the
-  // highlight is removed but the cursor stays in the editor
-  if (lastBlock) {
-    const collapsed = document.createRange();
-    collapsed.selectNodeContents(lastBlock);
-    collapsed.collapse(false);
-    selection.removeAllRanges();
-    selection.addRange(collapsed);
-    (lastBlock as HTMLElement).focus?.();
-    editor.focus();
-  }
+  collapseSelectionToLastBlock(editor, selection, lastBlock);
+  handleEditorChange(editor.innerHTML);
+}
 
+export function applyLineHeightToSelection(
+  lineHeight: string,
+  handleEditorChange: (html: string) => void
+): void {
+  const editor = getEditorElement();
+  if (!editor) return;
+
+  const selection = window.getSelection();
+  if (!selection || selection.rangeCount === 0) return;
+
+  const range = selection.getRangeAt(0);
+  if (!editor.contains(range.commonAncestorContainer)) return;
+
+  const affectedBlocks = collectAffectedBlocks(editor, range);
+
+  let lastBlock: HTMLElement | null = null;
+  affectedBlocks.forEach((block) => {
+    if (lineHeight) {
+      block.style.lineHeight = lineHeight;
+    } else {
+      block.style.removeProperty("line-height");
+    }
+    lastBlock = block;
+  });
+
+  collapseSelectionToLastBlock(editor, selection, lastBlock);
   handleEditorChange(editor.innerHTML);
 }
 
@@ -272,6 +309,36 @@ export const normalizeColor = (color: string): string => {
   return color;
 };
 
+const DEFAULT_FONT_SIZE_PX = 16;
+
+export function parseFontSizePx(fontSize: string): number | null {
+  if (!fontSize) return null;
+  const pxMatch = fontSize.match(/^([\d.]+)px$/);
+  if (pxMatch) return Math.round(parseFloat(pxMatch[1]));
+  return null;
+}
+
+/** Resolve the effective font size (px) at the caret from inline styles or computed style. */
+export function getActiveFontSizePx(startNode: Node | null, editor?: HTMLElement | null): number {
+  let node: Node | null = startNode;
+  if (node?.nodeType === Node.TEXT_NODE) node = node.parentElement;
+
+  const editorEl = editor ?? getEditorElement();
+  if (!node || !(node instanceof HTMLElement)) return DEFAULT_FONT_SIZE_PX;
+
+  let el: HTMLElement | null = node;
+  while (el && el !== editorEl) {
+    if (el.style.fontSize) {
+      const px = parseFontSizePx(el.style.fontSize);
+      if (px) return px;
+    }
+    el = el.parentElement;
+  }
+
+  const computedPx = parseFontSizePx(window.getComputedStyle(node).fontSize);
+  return computedPx ?? DEFAULT_FONT_SIZE_PX;
+}
+
 export const changeFontFamily = (
   fontName: string,
   handleEditorChange: (value: string) => void,
@@ -287,6 +354,100 @@ export const changeFontFamily = (
     selection?.addRange(savedRange);
   }
   document.execCommand("fontName", false, fontName);
+  const updatedHtml = editor.innerHTML;
+  handleEditorChange(updatedHtml);
+  setIframeContent(updatedHtml);
+  setHasChanges(true);
+};
+
+export const MAX_FONT_SIZE_PX = 32;
+
+function removeFontSizeFromRange(range: Range): void {
+  const root =
+    range.commonAncestorContainer.nodeType === Node.TEXT_NODE
+      ? range.commonAncestorContainer.parentNode
+      : range.commonAncestorContainer;
+  if (!root) return;
+
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_ELEMENT, {
+    acceptNode(node) {
+      return range.intersectsNode(node) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
+    },
+  });
+
+  const toProcess: HTMLElement[] = [];
+  let node: Node | null = walker.nextNode();
+  while (node) {
+    if (node instanceof HTMLElement) toProcess.push(node);
+    node = walker.nextNode();
+  }
+
+  toProcess.forEach((el) => {
+    if (el.style.fontSize) {
+      el.style.removeProperty("font-size");
+      if (!el.getAttribute("style")?.trim()) el.removeAttribute("style");
+    }
+    if (el.tagName === "FONT" && el.hasAttribute("size")) {
+      el.removeAttribute("size");
+    }
+    if (
+      el.tagName === "SPAN" &&
+      !el.getAttribute("style")?.trim() &&
+      el.attributes.length === 0
+    ) {
+      const parent = el.parentNode;
+      if (parent) {
+        while (el.firstChild) parent.insertBefore(el.firstChild, el);
+        parent.removeChild(el);
+      }
+    }
+  });
+}
+
+export const changeFontSize = (
+  fontSize: string,
+  handleEditorChange: (value: string) => void,
+  setIframeContent: (value: string) => void,
+  setHasChanges: (value: boolean) => void,
+  savedRange?: Range | null
+) => {
+  const editor = getEditorElement();
+  if (!editor) return;
+
+  if (savedRange) {
+    const selection = window.getSelection();
+    selection?.removeAllRanges();
+    selection?.addRange(savedRange);
+  }
+
+  const selection = window.getSelection();
+  if (!selection || selection.rangeCount === 0) return;
+
+  const range = selection.getRangeAt(0);
+  if (!editor.contains(range.commonAncestorContainer)) return;
+
+  if (!fontSize || fontSize === "default") {
+    removeFontSizeFromRange(range);
+  } else {
+    const px = parseInt(fontSize, 10);
+    if (Number.isNaN(px) || px < 1 || px > MAX_FONT_SIZE_PX) return;
+
+    if (range.collapsed) {
+      document.execCommand("styleWithCSS", false, "true");
+      document.execCommand("fontSize", false, `${px}px`);
+    } else {
+      const contents = range.extractContents();
+      const span = document.createElement("span");
+      span.style.fontSize = `${px}px`;
+      span.appendChild(contents);
+      range.insertNode(span);
+      const next = document.createRange();
+      next.selectNodeContents(span);
+      selection.removeAllRanges();
+      selection.addRange(next);
+    }
+  }
+
   const updatedHtml = editor.innerHTML;
   handleEditorChange(updatedHtml);
   setIframeContent(updatedHtml);

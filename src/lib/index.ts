@@ -17,11 +17,13 @@ export {
   wrapEmailBodyHtml,
   changeHighlightColor,
   changeFontFamily,
+  changeFontSize,
   normalizeColor,
   insertImageAtCursorInEditor,
   insertButtonAtCursorInEditor,
   insertTextIntoEditorAtSelection,
   replaceEditorRangeWithText,
+  applyLineHeightToSelection,
 } from "./utils/editor-utils";
 
 export { handleInlineCSS, needsInliningDetailed } from "./utils/inliner";

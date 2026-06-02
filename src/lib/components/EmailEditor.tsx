@@ -20,6 +20,8 @@ import ImagePickerModal from "./ImagePickerModal";
 import {
   createColorMenu,
   createFontMenu,
+  createFontSizeMenu,
+  createLineSpacingMenu,
   createMenuConfig,
   createButtonMenuConfig,
   createLinkMenuConfig,
@@ -27,10 +29,12 @@ import {
 import {
   changeHighlightColor,
   changeFontFamily,
+  changeFontSize,
   normalizeColor,
   replaceBodyContent,
   restoreSelectionFromMarker,
   applyAlignmentToSelection,
+  applyLineHeightToSelection,
   deleteImageFromEditor,
   updateImageWidthInEditor,
   alignImageInEditor,
@@ -40,6 +44,7 @@ import {
   insertTextIntoEditorAtSelection,
   getEditorElement,
   replaceEditorRangeWithText,
+  getActiveFontSizePx,
   updateButtonStyleInEditor,
   updateButtonTextColorInEditor,
   updateButtonBorderRadiusInEditor,
@@ -168,6 +173,55 @@ const AlignRightIcon = () => (
       d="M18 6h-8m8 4H6m12 4h-8m8 4H6"
     />
   </svg>
+);
+const AlignJustifyIcon = () => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="18"
+    height="18"
+    viewBox="0 0 24 24"
+  >
+    <path
+      fill="none"
+      stroke="currentColor"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth="2"
+      d="M4 6h16M4 10h16M4 14h16M4 18h16"
+    />
+  </svg>
+);
+const LineSpacingIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="4" y1="6" x2="20" y2="6" />
+    <line x1="4" y1="12" x2="20" y2="12" />
+    <line x1="4" y1="18" x2="20" y2="18" />
+    <polyline points="2 4 2 8" />
+    <polyline points="2 16 2 20" />
+    <line x1="2" y1="4" x2="2" y2="20" />
+  </svg>
+);
+const FontFamilyIcon = () => (
+  <span
+    className="inline-flex items-baseline leading-none"
+    style={{ letterSpacing: "-0.5px" }}
+    aria-hidden
+  >
+    <span style={{ fontFamily: "Georgia, serif", fontStyle: "italic", fontSize: 13, fontWeight: 600 }}>A</span>
+    <span style={{ fontFamily: "Arial, sans-serif", fontSize: 13, fontWeight: 400 }}>a</span>
+  </span>
+);
+const FontSizeIcon = ({ size }: { size: number }) => (
+  <span className="inline-flex items-center leading-none gap-0.5" aria-hidden>
+    <span style={{ fontSize: 11, fontWeight: 700, fontVariantNumeric: "tabular-nums", minWidth: 14, textAlign: "center" }}>
+      {size}
+    </span>
+    <svg width="8" height="12" viewBox="0 0 8 12" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4 1v10" />
+      <path d="M1.5 3.5 4 1l2.5 2.5" />
+      <path d="M1.5 8.5 4 11l2.5-2.5" />
+    </svg>
+  </span>
 );
 const ImageIcon = () => (
   <svg
@@ -301,6 +355,7 @@ const CDPEditorInner = (
   const [savedSelection, setSavedSelection] = useState<Range | null>(null);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [selectedColor, setSelectedColor] = useState("#000000");
+  const [activeFontSize, setActiveFontSize] = useState(16);
   const [tempColor, setTempColor] = useState("#000000");
   const [rects, setRects] = useState<DOMRect[]>([]);
   const [activeHeading, setActiveHeading] = useState<"h1" | "h2" | "h3" | null>(null);
@@ -418,13 +473,23 @@ const CDPEditorInner = (
     const onSelChange = () => {
       const editor = EditorRef.current;
       const sel = window.getSelection();
-      if (!sel || !editor || !editor.contains(sel.anchorNode)) { setRects([]); setActiveHeading(null); setActiveBold(false); setActiveItalic(false); setActiveUnderline(false); setActiveStrike(false); return; }
+      if (!sel || !editor || !editor.contains(sel.anchorNode)) {
+        setRects([]);
+        setActiveHeading(null);
+        setActiveBold(false);
+        setActiveItalic(false);
+        setActiveUnderline(false);
+        setActiveStrike(false);
+        return;
+      }
       const range = sel.getRangeAt(0);
       setRects(sel.isCollapsed ? [] : Array.from(range.getClientRects()));
       let node: Node | null = sel.anchorNode;
+      const editorContent = editor.querySelector(".rsw-ce") as HTMLElement | null;
       if (node?.nodeType === Node.TEXT_NODE) node = (node as Text).parentElement;
       if (node instanceof HTMLElement) {
         setSelectedColor(normalizeColor(window.getComputedStyle(node).color));
+        setActiveFontSize(getActiveFontSizePx(node, editorContent));
         const block = node.closest("h1, h2, h3");
         setActiveHeading(block ? (block.tagName.toLowerCase() as "h1" | "h2" | "h3") : null);
         setActiveBold(document.queryCommandState("bold"));
@@ -668,6 +733,27 @@ const CDPEditorInner = (
     changeFontFamily(font, handleEditorChange, setIframeContent, () => { }, savedSelection);
   };
 
+  const applyFontSize = (size: string) => {
+    changeFontSize(size, handleEditorChange, setIframeContent, () => { }, savedSelection);
+    const editorContent = document.querySelector(".rsw-editor .rsw-ce") as HTMLElement | null;
+    const sel = window.getSelection();
+    if (size) {
+      const px = parseInt(size, 10);
+      if (!Number.isNaN(px)) setActiveFontSize(px);
+    } else if (sel?.anchorNode && editorContent) {
+      setActiveFontSize(getActiveFontSizePx(sel.anchorNode, editorContent));
+    }
+  };
+
+  const applyLineHeight = (lineHeight: string) => {
+    if (savedSelection) {
+      const selection = window.getSelection();
+      selection?.removeAllRanges();
+      selection?.addRange(savedSelection);
+    }
+    applyLineHeightToSelection(lineHeight, handleEditorChange);
+  };
+
   // ── CSS inlining ─────────────────────────────────────────────────────────
   const triggerInlining = () => {
     try {
@@ -763,6 +849,7 @@ const CDPEditorInner = (
   };
 
   const buttonMenuConfig = (() => {
+    const btn = selectedButton?.element;
     const base = createButtonMenuConfig(
       () => selectedButton?.element && deleteButtonFromEditor(selectedButton.element, setIframeContent, () => setSelectedButton(null)),
       () => selectedButton?.element && removeButtonBackgroundInEditor(selectedButton.element, setIframeContent, () => setSelectedButton(null)),
@@ -773,6 +860,10 @@ const CDPEditorInner = (
       (radius) => selectedButton?.element && updateButtonBorderRadiusInEditor(selectedButton.element, radius, setIframeContent, () => setSelectedButton(null)),
       (padding) => selectedButton?.element && updateButtonPaddingInEditor(selectedButton.element, padding, setIframeContent, () => setSelectedButton(null)),
       (align) => selectedButton?.element && alignButtonInEditor(selectedButton.element, align, setIframeContent, () => setSelectedButton(null)),
+      {
+        background: btn ? normalizeColor(btn.style.backgroundColor || "#3b82f6") : "#3b82f6",
+        text: btn ? normalizeColor(btn.style.color || "#ffffff") : "#ffffff",
+      }
     );
     return {
       ...base,
@@ -807,6 +898,8 @@ const CDPEditorInner = (
 
   const colorMenu = createColorMenu(applyHighlightColor);
   const fontMenu = createFontMenu(applyFontFamily);
+  const fontSizeMenu = createFontSizeMenu(applyFontSize);
+  const lineSpacingMenu = createLineSpacingMenu(applyLineHeight);
 
   const editorHeight = typeof height === "number" ? `${height}px` : height;
 
@@ -890,6 +983,21 @@ const CDPEditorInner = (
               <Tooltip title="Align Left"><button onClick={() => applyAlignmentToSelection("left", handleEditorChange)} className="toolbar-btn"><AlignLeftIcon /></button></Tooltip>
               <Tooltip title="Align Center"><button onClick={() => applyAlignmentToSelection("center", handleEditorChange)} className="toolbar-btn"><AlignCenterIcon /></button></Tooltip>
               <Tooltip title="Align Right"><button onClick={() => applyAlignmentToSelection("right", handleEditorChange)} className="toolbar-btn"><AlignRightIcon /></button></Tooltip>
+              <Tooltip title="Justify"><button onClick={() => applyAlignmentToSelection("justify", handleEditorChange)} className="toolbar-btn"><AlignJustifyIcon /></button></Tooltip>
+            </div>
+
+            <div className="w-px h-5 bg-gray-200 mx-1.5 flex-shrink-0" />
+
+            {/* Line spacing */}
+            <div className="flex items-center gap-1.5">
+              <Tooltip title="Line spacing">
+                <Dropdown menu={lineSpacingMenu} trigger={["click"]} onOpenChange={(open) => { if (open) saveSelectionBeforeDropdown(); }}>
+                  <button type="button" className="toolbar-btn px-2 text-xs font-medium flex items-center gap-0.5">
+                    <LineSpacingIcon />
+                    <ChevronIcon />
+                  </button>
+                </Dropdown>
+              </Tooltip>
             </div>
 
             <div className="w-px h-5 bg-gray-200 mx-1.5 flex-shrink-0" />
@@ -937,7 +1045,18 @@ const CDPEditorInner = (
               <Tooltip title="Font Family">
                 <Dropdown menu={fontMenu} trigger={["click"]} onOpenChange={(open) => { if (open) saveSelectionBeforeDropdown(); }}>
                   <button className="toolbar-btn px-2 text-xs font-medium flex items-center gap-0.5">
-                    Aa <ChevronIcon />
+                    <FontFamilyIcon /> <ChevronIcon />
+                  </button>
+                </Dropdown>
+              </Tooltip>
+            </div>
+
+            {/* Font size */}
+            <div className="flex items-center gap-1.5">
+              <Tooltip title="Font Size">
+                <Dropdown menu={fontSizeMenu} trigger={["click"]} onOpenChange={(open) => { if (open) saveSelectionBeforeDropdown(); }}>
+                  <button type="button" className="toolbar-btn px-2 text-xs font-medium flex items-center gap-0.5">
+                    <FontSizeIcon size={activeFontSize} /> <ChevronIcon />
                   </button>
                 </Dropdown>
               </Tooltip>
@@ -1044,7 +1163,7 @@ const CDPEditorInner = (
 
               {/* Button context menu */}
               {selectedButton && (
-                <div style={{ position: "absolute", top: btnMenuPos.top, left: btnMenuPos.left, zIndex: 1000, width: 200 }}>
+                <div style={{ position: "absolute", top: btnMenuPos.top, left: btnMenuPos.left, zIndex: 1000, width: 260 }}>
                   <Dropdown menu={buttonMenuConfig} trigger={["click"]} open onOpenChange={(v) => { if (!v) setSelectedButton(null); }}>
                     <span />
                   </Dropdown>

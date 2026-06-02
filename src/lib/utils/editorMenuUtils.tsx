@@ -1,6 +1,6 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import type { MenuProps } from "antd";
-import { Tooltip } from "antd";
+import { ColorPicker, Tooltip } from "antd";
 
 // ─── Tiny icon helpers ────────────────────────────────────────────────────────
 
@@ -37,6 +37,84 @@ const colorLabel = (hex: string, text: string) => (
     {text}
   </span>
 );
+
+function stopMenuClose(e: React.SyntheticEvent) {
+  e.stopPropagation();
+}
+
+/** Full color picker with Apply — for use inside Ant Design dropdown menus. */
+export const InlineColorPicker: React.FC<{
+  defaultColor: string;
+  onApply: (color: string) => void;
+  buttonLabel?: string;
+}> = ({ defaultColor, onApply, buttonLabel = "Custom color" }) => {
+  const [tempColor, setTempColor] = useState(defaultColor);
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    setTempColor(defaultColor);
+  }, [defaultColor]);
+
+  return (
+    <div onClick={stopMenuClose} onMouseDown={stopMenuClose}>
+      <ColorPicker
+        value={tempColor}
+        open={open}
+        onOpenChange={setOpen}
+        onChange={(c) => setTempColor(c.toHexString())}
+        getPopupContainer={(node) => node.parentElement ?? document.body}
+        panelRender={(panel) => (
+          <div onClick={stopMenuClose} onMouseDown={stopMenuClose}>
+            {panel}
+            <button
+              type="button"
+              className="border text-xs px-2 py-1 mt-1 mb-1 mx-1 rounded hover:bg-gray-50"
+              style={{ width: "calc(100% - 8px)" }}
+              onClick={() => {
+                onApply(tempColor);
+                setOpen(false);
+              }}
+            >
+              Apply
+            </button>
+          </div>
+        )}
+      >
+        <button
+          type="button"
+          className="flex w-full items-center gap-2 text-left text-xs"
+          onClick={stopMenuClose}
+        >
+          <span
+            style={{
+              width: 14,
+              height: 14,
+              borderRadius: 2,
+              backgroundColor: tempColor,
+              border: "1px solid rgba(0,0,0,0.15)",
+              flexShrink: 0,
+            }}
+          />
+          {buttonLabel}
+        </button>
+      </ColorPicker>
+    </div>
+  );
+};
+
+const buttonBgPresets = [
+  { key: "bg-#3b82f6", color: "#3b82f6", label: "Blue" },
+  { key: "bg-#10b981", color: "#10b981", label: "Green" },
+  { key: "bg-#ef4444", color: "#ef4444", label: "Red" },
+  { key: "bg-#f59e0b", color: "#f59e0b", label: "Orange" },
+  { key: "bg-#8b5cf6", color: "#8b5cf6", label: "Purple" },
+  { key: "bg-#000000", color: "#000000", label: "Black" },
+];
+
+const buttonTextPresets = [
+  { key: "text-#ffffff", color: "#ffffff", label: "White" },
+  { key: "text-#000000", color: "#000000", label: "Black" },
+];
 
 // ─── Exports ──────────────────────────────────────────────────────────────────
 
@@ -134,27 +212,52 @@ export const createButtonMenuConfig = (
   handleTextColorChange: (color: string) => void,
   handleBorderRadiusChange: (radius: string) => void,
   handlePaddingChange: (padding: string) => void,
-  handleAlign: (alignment: "left" | "center" | "right") => void
+  handleAlign: (alignment: "left" | "center" | "right") => void,
+  currentColors?: { background?: string; text?: string }
 ): MenuProps => ({
   items: [
     {
       key: "bg-color",
       label: il(<PaletteIcon />, "Background Color"),
       children: [
-        { key: "bg-#3b82f6", label: colorLabel("#3b82f6", "Blue"), onClick: () => handleBgColorChange("#3b82f6") },
-        { key: "bg-#10b981", label: colorLabel("#10b981", "Green"), onClick: () => handleBgColorChange("#10b981") },
-        { key: "bg-#ef4444", label: colorLabel("#ef4444", "Red"), onClick: () => handleBgColorChange("#ef4444") },
-        { key: "bg-#f59e0b", label: colorLabel("#f59e0b", "Orange"), onClick: () => handleBgColorChange("#f59e0b") },
-        { key: "bg-#8b5cf6", label: colorLabel("#8b5cf6", "Purple"), onClick: () => handleBgColorChange("#8b5cf6") },
-        { key: "bg-#000000", label: colorLabel("#000000", "Black"), onClick: () => handleBgColorChange("#000000") },
+        {
+          key: "bg-custom",
+          label: (
+            <InlineColorPicker
+              defaultColor={currentColors?.background ?? "#3b82f6"}
+              onApply={handleBgColorChange}
+              buttonLabel="Custom background"
+            />
+          ),
+        },
+        { type: "divider" },
+        ...buttonBgPresets.map((p) => ({
+          key: p.key,
+          label: colorLabel(p.color, p.label),
+          onClick: () => handleBgColorChange(p.color),
+        })),
       ],
     },
     {
       key: "text-color",
       label: il(<TextColorIcon />, "Text Color"),
       children: [
-        { key: "text-#ffffff", label: colorLabel("#ffffff", "White"), onClick: () => handleTextColorChange("#ffffff") },
-        { key: "text-#000000", label: colorLabel("#000000", "Black"), onClick: () => handleTextColorChange("#000000") },
+        {
+          key: "text-custom",
+          label: (
+            <InlineColorPicker
+              defaultColor={currentColors?.text ?? "#ffffff"}
+              onApply={handleTextColorChange}
+              buttonLabel="Custom text color"
+            />
+          ),
+        },
+        { type: "divider" },
+        ...buttonTextPresets.map((p) => ({
+          key: p.key,
+          label: colorLabel(p.color, p.label),
+          onClick: () => handleTextColorChange(p.color),
+        })),
       ],
     },
     {
@@ -239,5 +342,40 @@ export const createFontMenu = (onSelect: (font: string) => void): MenuProps => (
   })),
   onClick: ({ key }) => {
     onSelect(key);
+  },
+});
+
+export const fontSizeOptions = [10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32] as const;
+
+export const createFontSizeMenu = (onSelect: (size: string) => void): MenuProps => ({
+  items: [
+    { key: "default", label: "Default" },
+    ...fontSizeOptions.map((s) => ({
+      key: String(s),
+      label: <span style={{ fontSize: Math.min(s, 20) }}>{s}px</span>,
+    })),
+  ],
+  onClick: ({ key }) => {
+    onSelect(key === "default" ? "" : String(key));
+  },
+  style: { maxHeight: 280, overflowY: "auto" },
+});
+
+export const lineSpacingOptions = [
+  { label: "Default", value: "default" },
+  { label: "Single (1.0)", value: "1" },
+  { label: "1.15", value: "1.15" },
+  { label: "1.5", value: "1.5" },
+  { label: "Double (2.0)", value: "2" },
+  { label: "2.5", value: "2.5" },
+];
+
+export const createLineSpacingMenu = (onSelect: (lineHeight: string) => void): MenuProps => ({
+  items: lineSpacingOptions.map((o) => ({
+    key: o.value,
+    label: o.label,
+  })),
+  onClick: ({ key }) => {
+    onSelect(key === "default" ? "" : String(key));
   },
 });
