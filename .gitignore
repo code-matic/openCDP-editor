@@ -14,3 +14,9 @@
 # Claude Code / tooling
 .claude/
 .tokensave/
+.firebase/
+.firebaserc
+.firebase.json
+.firebase.rules
+.firebase.storage.rules
+.firebase.storage.rules
