@@ -10,3 +10,7 @@
 
 # Firebase CLI cache
 .firebase/
+
+# Claude Code / tooling
+.claude/
+.tokensave/

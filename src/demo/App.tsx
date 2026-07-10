@@ -3,6 +3,12 @@ import { toast, Toaster } from "sonner";
 import { CDPEditor } from "../lib/components/EmailEditor";
 import type { CDPEditorHandle, ImageAsset } from "../lib/types";
 
+// ── Links ─────────────────────────────────────────────────────────────────────
+
+const NPM_URL = "https://www.npmjs.com/package/@codematic.io/cdp-editor";
+const GITHUB_URL = "https://github.com/code-matic/openCDP-editor";
+const INSTALL_CMD = "npm i @codematic.io/cdp-editor";
+
 // ── Sample initial HTML ───────────────────────────────────────────────────────
 
 const INITIAL_HTML = `<!DOCTYPE html>
@@ -65,17 +71,17 @@ const DEMO_IMAGES: ImageAsset[] = [
   },
 ];
 
-// ── Feature chips (hero) ──────────────────────────────────────────────────────
+// ── Feature list (hero) ───────────────────────────────────────────────────────
 
 const FEATURES = [
-  { icon: "✍️", label: "Rich text editing" },
-  { icon: "🖼️", label: "Image management" },
-  { icon: "🔘", label: "Button builder" },
-  { icon: "🎨", label: "Colours & fonts" },
-  { icon: "↔️", label: "Text alignment" },
-  { icon: "📐", label: "HTML / Monaco view" },
-  { icon: "📦", label: "Inline CSS" },
-  { icon: "📱", label: "Phone preview" },
+  "Rich text editing",
+  "Image management",
+  "Button builder",
+  "Colours & fonts",
+  "HTML / Monaco view",
+  "Inline CSS",
+  "Phone preview",
+  "Dynamic attributes",
 ];
 
 // ── How-to guide steps ────────────────────────────────────────────────────────
@@ -103,24 +109,47 @@ const HOW_TO_STEPS = [
   },
 ];
 
-// ── Light blue theme tokens ───────────────────────────────────────────────────
+// ── Theme tokens ──────────────────────────────────────────────────────────────
 
 const theme = {
-  bgPage: "linear-gradient(170deg, #e0f2fe 0%, #bae6fd 45%,rgb(42, 157, 210) 100%)",
-  bgNav: "rgba(255,255,255,0.85)",
-  bgPanel: "rgba(255,255,255,0.7)",
-  bgPanelBorder: "rgba(2,132,199,0.2)",
-  bgButton: "#0284c7",
-  textPrimary: "#0c4a6e",
-  textSecondary: "#0369a1",
-  textMuted: "rgba(12,74,110,0.65)",
-  border: "rgba(2,132,199,0.25)",
-  accent: "#0284c7",
-  codeBg: "#f0f9ff",
-  codeText: "#0c4a6e",
+  bg: "#f6f7fb",
+  surface: "#ffffff",
+  surfaceMuted: "#f1f2f9",
+  border: "#e5e7f0",
+  borderStrong: "#d4d7e8",
+  text: "#1a1a2e",
+  textMuted: "#6b6f8a",
+  accent: "#6d28d9",
+  accentHover: "#5b21b6",
+  accentSoft: "#f3edff",
+  gradient: "linear-gradient(135deg, #7c3aed 0%, #6366f1 45%, #ec4899 100%)",
+  codeBg: "#1a1a2e",
+  codeText: "#c7d2fe",
 };
 
-// ── Demo App ──────────────────────────────────────────────────────────────────
+// Rotating accent colors for feature ticks & how-to cards.
+const ACCENTS = [
+  { color: "#7c3aed", soft: "#f3edff", border: "#e6d9ff" }, // violet
+  { color: "#2563eb", soft: "#e8f0ff", border: "#d3e2ff" }, // blue
+  { color: "#0891b2", soft: "#e0f7fb", border: "#c2ecf3" }, // cyan
+  { color: "#db2777", soft: "#fdeaf3", border: "#fbd4e6" }, // pink
+];
+
+// ── Inline icons ──────────────────────────────────────────────────────────────
+
+const GithubIcon: React.FC<{ size?: number }> = ({ size = 16 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+    <path d="M12 .5C5.37.5 0 5.87 0 12.5c0 5.3 3.44 9.8 8.21 11.39.6.11.82-.26.82-.58l-.01-2.05c-3.34.73-4.04-1.61-4.04-1.61-.55-1.39-1.34-1.76-1.34-1.76-1.09-.75.08-.73.08-.73 1.21.09 1.85 1.24 1.85 1.24 1.07 1.84 2.81 1.31 3.5 1 .11-.78.42-1.31.76-1.61-2.67-.3-5.47-1.34-5.47-5.95 0-1.31.47-2.39 1.24-3.23-.13-.3-.54-1.53.11-3.18 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 0 1 6 0c2.29-1.55 3.3-1.23 3.3-1.23.65 1.65.24 2.88.12 3.18.77.84 1.23 1.92 1.23 3.23 0 4.62-2.81 5.64-5.49 5.94.43.37.81 1.1.81 2.22l-.01 3.29c0 .32.22.7.83.58A12.01 12.01 0 0 0 24 12.5C24 5.87 18.63.5 12 .5Z" />
+  </svg>
+);
+
+const NpmIcon: React.FC<{ size?: number }> = ({ size = 16 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+    <path d="M0 7.5h24v9h-12v1.5H6v-1.5H0v-9Zm1.5 7.5H3v-6h1.5v6H6V9h1.5v6H9V7.5H1.5V15Zm9-6v7.5H12V15h1.5v-1.5H15V9h-4.5Zm3 1.5H15v3h-1.5v-3ZM16.5 9v6H18V9h1.5v6H21V9h1.5v6H24V9h-7.5Z" />
+  </svg>
+);
+
+// ── Attribute panel ───────────────────────────────────────────────────────────
 
 interface AttributePanelProps {
   editorRef: React.RefObject<CDPEditorHandle | null>;
@@ -132,14 +161,11 @@ interface AttributePanelProps {
 const AttributePanel: React.FC<AttributePanelProps> = ({ editorRef, customText, setCustomText, setAttrPanelOpen }) => (
   <>
     {/* Quick-insert */}
-    <div
-      className="rounded-xl p-4"
-      style={{ background: theme.bgPanel, border: `1px solid ${theme.bgPanelBorder}` }}
-    >
-      <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: theme.textMuted }}>
+    <div className="rounded-2xl p-4" style={{ background: theme.surface, border: `1px solid ${theme.border}` }}>
+      <p className="text-[11px] font-semibold uppercase tracking-widest mb-3" style={{ color: theme.textMuted }}>
         Insert attribute
       </p>
-      <div className="space-y-1.5">
+      <div className="space-y-1">
         {DEMO_ATTRIBUTES.map((attr) => (
           <button
             key={attr.value}
@@ -147,23 +173,17 @@ const AttributePanel: React.FC<AttributePanelProps> = ({ editorRef, customText, 
               editorRef.current?.insert(attr.value);
               setAttrPanelOpen(false);
             }}
-            className="w-full text-left text-xs px-3 py-2 rounded-lg transition-all"
-            style={{
-              background: "rgba(255,255,255,0.8)",
-              border: `1px solid ${theme.border}`,
-              color: theme.textPrimary,
-            }}
+            className="w-full text-left text-xs px-3 py-2 rounded-lg transition-colors"
+            style={{ background: "transparent", color: theme.text }}
             onMouseEnter={(e) => {
               const b = e.currentTarget as HTMLButtonElement;
-              b.style.background = theme.bgButton;
-              b.style.color = "#fff";
-              b.style.borderColor = theme.bgButton;
+              b.style.background = theme.accentSoft;
+              b.style.color = theme.accent;
             }}
             onMouseLeave={(e) => {
               const b = e.currentTarget as HTMLButtonElement;
-              b.style.background = "rgba(255,255,255,0.8)";
-              b.style.color = theme.textPrimary;
-              b.style.borderColor = theme.border;
+              b.style.background = "transparent";
+              b.style.color = theme.text;
             }}
           >
             {attr.label}
@@ -173,11 +193,8 @@ const AttributePanel: React.FC<AttributePanelProps> = ({ editorRef, customText, 
     </div>
 
     {/* Custom insert */}
-    <div
-      className="rounded-xl p-4"
-      style={{ background: theme.bgPanel, border: `1px solid ${theme.bgPanelBorder}` }}
-    >
-      <p className="text-xs font-semibold uppercase tracking-widest mb-2" style={{ color: theme.textMuted }}>
+    <div className="rounded-2xl p-4" style={{ background: theme.surface, border: `1px solid ${theme.border}` }}>
+      <p className="text-[11px] font-semibold uppercase tracking-widest mb-2" style={{ color: theme.textMuted }}>
         Custom insert
       </p>
       <textarea
@@ -185,13 +202,15 @@ const AttributePanel: React.FC<AttributePanelProps> = ({ editorRef, customText, 
         value={customText}
         onChange={(e) => setCustomText(e.target.value)}
         placeholder="Type anything…"
-        className="w-full text-xs rounded-lg px-2 py-1.5 resize-none focus:outline-none"
+        className="w-full text-xs rounded-lg px-2.5 py-2 resize-none focus:outline-none transition-colors"
         style={{
-          background: "rgba(255,255,255,0.9)",
+          background: theme.surfaceMuted,
           border: `1px solid ${theme.border}`,
-          color: theme.textPrimary,
+          color: theme.text,
           caretColor: theme.accent,
         }}
+        onFocus={(e) => (e.currentTarget.style.borderColor = theme.accent)}
+        onBlur={(e) => (e.currentTarget.style.borderColor = theme.border)}
       />
       <button
         onClick={() => {
@@ -201,14 +220,18 @@ const AttributePanel: React.FC<AttributePanelProps> = ({ editorRef, customText, 
             setAttrPanelOpen(false);
           }
         }}
-        className="mt-2 w-full text-xs font-semibold px-3 py-2 rounded-lg transition-all"
-        style={{ background: theme.bgButton, color: "#fff" }}
+        className="mt-2 w-full text-xs font-semibold px-3 py-2 rounded-lg transition-colors"
+        style={{ background: theme.accent, color: "#fff" }}
+        onMouseEnter={(e) => (e.currentTarget.style.background = theme.accentHover)}
+        onMouseLeave={(e) => (e.currentTarget.style.background = theme.accent)}
       >
         Insert at cursor
       </button>
     </div>
   </>
 );
+
+// ── Demo App ──────────────────────────────────────────────────────────────────
 
 export default function App() {
   const editorRef = useRef<CDPEditorHandle>(null);
@@ -240,6 +263,9 @@ export default function App() {
     setImages((prev) => prev.filter((i) => i.path !== path));
   };
 
+  const copyInstall = () => {
+    navigator.clipboard.writeText(INSTALL_CMD).then(() => toast.success("Install command copied"));
+  };
 
   return (
     <>
@@ -248,76 +274,90 @@ export default function App() {
       {/* ── Page shell ───────────────────────────────────────────────────────── */}
       <div
         className="min-h-screen"
-        style={{ background: theme.bgPage }}
+        style={{
+          color: theme.text,
+          background: `radial-gradient(1200px 600px at 50% -200px, #ede9fe 0%, rgba(237,233,254,0) 60%), radial-gradient(900px 500px at 100% 10%, #fce7f3 0%, rgba(252,231,243,0) 55%), ${theme.bg}`,
+        }}
       >
 
         {/* ── Navbar ────────────────────────────────────────────────────────── */}
         <header
-          className="flex items-center justify-between px-4 sm:px-8 py-3 sm:py-4"
+          className="flex items-center justify-between px-4 sm:px-8 py-3"
           style={{
             borderBottom: `1px solid ${theme.border}`,
-            background: theme.bgNav,
-            backdropFilter: "blur(14px)",
+            background: "rgba(246,247,251,0.75)",
+            backdropFilter: "blur(12px)",
             position: "sticky",
             top: 0,
             zIndex: 50,
           }}
         >
           {/* Brand */}
-          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+          <div className="flex items-center gap-2.5 min-w-0">
             <div
-              className="w-7 h-7 sm:w-8 sm:h-8 flex-shrink-0 rounded-lg flex items-center justify-center font-bold text-sm"
-              style={{ background: theme.bgButton, color: "#fff" }}
+              className="w-8 h-8 flex-shrink-0 rounded-lg flex items-center justify-center font-bold text-sm"
+              style={{ background: theme.gradient, color: "#fff", boxShadow: "0 4px 12px rgba(124,58,237,0.35)" }}
             >
-              E
+              C
             </div>
-            <div className="min-w-0">
-              <span className="font-bold tracking-tight text-xs sm:text-sm truncate block" style={{ color: theme.textPrimary }}>
+            <div className="flex items-baseline gap-2 min-w-0">
+              <span className="font-semibold tracking-tight text-sm truncate" style={{ color: theme.text }}>
                 cdp-editor
               </span>
-              <span
-                className="text-xs px-1.5 py-0.5 rounded font-medium hidden sm:inline"
-                style={{ background: "rgba(2,132,199,0.12)", color: theme.textSecondary }}
-              >
+              <span className="text-[11px] font-medium hidden sm:inline" style={{ color: theme.textMuted }}>
                 v{__APP_VERSION__}
               </span>
             </div>
           </div>
 
-          {/* Controls */}
-          <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
-            <label
-              className="hidden sm:flex items-center gap-2 text-sm cursor-pointer select-none"
-              style={{ color: theme.textSecondary }}
+          {/* Links */}
+          <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+            <a
+              href={NPM_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 text-xs font-medium px-2.5 sm:px-3 py-2 rounded-lg transition-colors"
+              style={{ color: theme.textMuted }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = theme.surfaceMuted; e.currentTarget.style.color = theme.text; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = theme.textMuted; }}
+              title="View on npm"
             >
-              <input
-                type="checkbox"
-                checked={readOnly}
-                onChange={(e) => setReadOnly(e.target.checked)}
-                className="rounded"
-                style={{ accentColor: theme.accent }}
-              />
-              Read-only
-            </label>
+              <NpmIcon />
+              <span className="hidden sm:inline">npm</span>
+            </a>
+            <a
+              href={GITHUB_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 text-xs font-medium px-2.5 sm:px-3 py-2 rounded-lg transition-colors"
+              style={{ color: theme.textMuted }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = theme.surfaceMuted; e.currentTarget.style.color = theme.text; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = theme.textMuted; }}
+              title="View source on GitHub"
+            >
+              <GithubIcon />
+              <span className="hidden sm:inline">GitHub</span>
+            </a>
+            <div className="w-px h-5 mx-1 hidden sm:block" style={{ background: theme.border }} />
             <button
               onClick={() => setShowOutput((v) => !v)}
-              className="text-xs px-3 sm:px-4 py-2 rounded-lg font-medium transition-all whitespace-nowrap"
+              className="text-xs px-3 py-2 rounded-lg font-medium transition-colors whitespace-nowrap"
               style={
                 showOutput
-                  ? { background: theme.bgButton, color: "#fff" }
-                  : { background: "rgba(255,255,255,0.9)", color: theme.textPrimary, border: `1px solid ${theme.border}` }
+                  ? { background: theme.text, color: "#fff" }
+                  : { background: theme.surface, color: theme.text, border: `1px solid ${theme.border}` }
               }
             >
-              <span className="hidden sm:inline">{showOutput ? "Hide" : "Show"} HTML Output</span>
-              <span className="sm:hidden">{showOutput ? "Hide" : "HTML"}</span>
+              <span className="hidden sm:inline">{showOutput ? "Hide" : "Show"} HTML</span>
+              <span className="sm:hidden">HTML</span>
             </button>
             {/* Mobile: attributes drawer toggle */}
             <button
-              className="lg:hidden text-xs px-3 py-2 rounded-lg font-medium transition-all"
-              style={{ background: "rgba(255,255,255,0.9)", color: theme.textPrimary, border: `1px solid ${theme.border}` }}
+              className="lg:hidden text-xs px-3 py-2 rounded-lg font-medium transition-colors"
+              style={{ background: theme.surface, color: theme.text, border: `1px solid ${theme.border}` }}
               onClick={() => setAttrPanelOpen((v) => !v)}
             >
-              {attrPanelOpen ? "✕ Close" : "+ Insert"}
+              {attrPanelOpen ? "✕" : "+"}
             </button>
           </div>
         </header>
@@ -325,14 +365,10 @@ export default function App() {
         {/* ── Mobile drawer (attributes) ──────────────────────────────────── */}
         {attrPanelOpen && (
           <div
-            className="lg:hidden px-4 py-4 space-y-4"
-            style={{ borderBottom: `1px solid ${theme.border}`, background: theme.bgPanel }}
+            className="lg:hidden px-4 py-4 space-y-3"
+            style={{ borderBottom: `1px solid ${theme.border}`, background: theme.surfaceMuted }}
           >
-            {/* Mobile read-only toggle */}
-            <label
-              className="flex items-center gap-2 text-sm cursor-pointer select-none"
-              style={{ color: theme.textSecondary }}
-            >
+            <label className="flex items-center gap-2 text-sm cursor-pointer select-none" style={{ color: theme.textMuted }}>
               <input
                 type="checkbox"
                 checked={readOnly}
@@ -347,58 +383,101 @@ export default function App() {
         )}
 
         {/* ── Hero ──────────────────────────────────────────────────────────── */}
-        <div className="text-center px-5 pt-10 sm:pt-16 pb-8 sm:pb-10">
+        <div className="text-center px-5 pt-14 sm:pt-20 pb-6">
           <div
-            className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full mb-4 sm:mb-5 tracking-wide uppercase"
-            style={{
-              background: "rgba(255,255,255,0.8)",
-              color: theme.textSecondary,
-              border: `1px solid ${theme.border}`,
-            }}
+            className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-3 py-1 rounded-full mb-6 tracking-wide"
+            style={{ background: theme.accentSoft, color: theme.accent, border: `1px solid ${ACCENTS[0].border}` }}
           >
-            <span className="w-1.5 h-1.5 rounded-full" style={{ background: theme.accent }} />
-            Interactive Demo
+            <span className="w-1.5 h-1.5 rounded-full" style={{ background: theme.gradient }} />
+            Open-source · MIT licensed
           </div>
 
           <h1
-            className="font-extrabold tracking-tight mb-3 sm:mb-4"
-            style={{ fontSize: "clamp(1.75rem, 5vw, 3rem)", lineHeight: 1.1, color: theme.textPrimary }}
+            className="font-semibold tracking-tight mb-4"
+            style={{ fontSize: "clamp(2rem, 6vw, 3.5rem)", lineHeight: 1.05, color: theme.text }}
           >
-            CDP Editor
-          </h1>
-
-          <p
-            className="max-w-xl mx-auto text-sm sm:text-base px-2"
-            style={{ color: theme.textMuted }}
-          >
-            A fully-featured rich text editor for crafting beautiful HTML emails.
-            Inject dynamic attributes at the cursor from any external picker.
-          </p>
-        </div>
-
-        {/* ── Feature chips ─────────────────────────────────────────────────── */}
-        <div className="flex flex-wrap justify-center gap-2 px-4 sm:px-6 pb-8 sm:pb-12">
-          {FEATURES.map((f) => (
-            <div
-              key={f.label}
-              className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full"
+            The email editor
+            <br />
+            <span
               style={{
-                background: "rgba(255,255,255,0.8)",
-                color: theme.textSecondary,
-                border: `1px solid ${theme.border}`,
+                background: theme.gradient,
+                WebkitBackgroundClip: "text",
+                backgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                color: "transparent",
               }}
             >
-              <span>{f.icon}</span>
-              <span>{f.label}</span>
-            </div>
-          ))}
+              your users deserve.
+            </span>
+          </h1>
+
+          <p className="max-w-lg mx-auto text-sm sm:text-base leading-relaxed px-2" style={{ color: theme.textMuted }}>
+            A fully-featured rich text editor for crafting beautiful HTML emails —
+            with dynamic attributes injected right at the cursor.
+          </p>
+
+          {/* Install command + CTAs */}
+          <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
+            <button
+              onClick={copyInstall}
+              className="group flex items-center gap-3 text-sm font-mono px-4 py-2.5 rounded-xl transition-colors"
+              style={{ background: theme.surface, border: `1px solid ${theme.border}`, color: theme.text }}
+              title="Copy install command"
+            >
+              <span style={{ color: theme.textMuted }}>$</span>
+              <span>{INSTALL_CMD}</span>
+              <svg className="opacity-40 group-hover:opacity-80 transition-opacity" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect width="14" height="14" x="8" y="8" rx="2" ry="2" />
+                <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
+              </svg>
+            </button>
+            <a
+              href={GITHUB_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 text-sm font-semibold px-5 py-2.5 rounded-xl transition-transform hover:-translate-y-0.5"
+              style={{ background: theme.gradient, color: "#fff", boxShadow: "0 8px 24px rgba(124,58,237,0.35)" }}
+            >
+              <GithubIcon size={15} />
+              Star on GitHub
+            </a>
+          </div>
+        </div>
+
+        {/* ── Feature list ──────────────────────────────────────────────────── */}
+        <div className="flex flex-wrap justify-center gap-2.5 px-6 pb-12 sm:pb-16 max-w-3xl mx-auto">
+          {FEATURES.map((f, i) => {
+            const a = ACCENTS[i % ACCENTS.length];
+            return (
+              <span
+                key={f}
+                className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full"
+                style={{ background: a.soft, color: a.color, border: `1px solid ${a.border}` }}
+              >
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={a.color} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+                {f}
+              </span>
+            );
+          })}
         </div>
 
         {/* ── Main: sidebar + editor ────────────────────────────────────────── */}
-        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 pb-16 sm:pb-20 flex flex-col lg:flex-row gap-5">
+        <div className="max-w-[1300px] mx-auto px-4 sm:px-6 pb-20 flex flex-col lg:flex-row gap-5">
 
-          {/* Desktop sidebar (hidden on mobile — handled by drawer) */}
-          <div className="hidden lg:flex w-52 flex-shrink-0 flex-col gap-4">
+          {/* Desktop sidebar */}
+          <div className="hidden lg:flex w-56 flex-shrink-0 flex-col gap-3">
+            <label className="flex items-center gap-2 text-xs cursor-pointer select-none px-1" style={{ color: theme.textMuted }}>
+              <input
+                type="checkbox"
+                checked={readOnly}
+                onChange={(e) => setReadOnly(e.target.checked)}
+                className="rounded"
+                style={{ accentColor: theme.accent }}
+              />
+              Read-only mode
+            </label>
             <AttributePanel editorRef={editorRef} customText={customText} setCustomText={setCustomText} setAttrPanelOpen={setAttrPanelOpen} />
           </div>
 
@@ -407,48 +486,34 @@ export default function App() {
 
             {/* HTML output */}
             {showOutput && (
-              <div
-                className="mt-4 sm:mt-5 rounded-xl overflow-hidden mb-10"
-                style={{ border: `1px solid ${theme.border}` }}
-              >
+              <div className="mb-5 rounded-2xl overflow-hidden" style={{ border: `1px solid ${theme.border}` }}>
                 <div
                   className="flex items-center justify-between px-4 py-2.5"
-                  style={{
-                    background: theme.bgPanel,
-                    borderBottom: `1px solid ${theme.border}`,
-                  }}
+                  style={{ background: theme.surface, borderBottom: `1px solid ${theme.border}` }}
                 >
-                  <span className="text-xs font-semibold" style={{ color: theme.textMuted }}>
+                  <span className="text-[11px] font-semibold uppercase tracking-widest" style={{ color: theme.textMuted }}>
                     HTML Output
                   </span>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-3">
                     <span className="text-xs" style={{ color: theme.textMuted }}>
                       {html.length} chars
                     </span>
                     <button
-                      onClick={() => {
-                        navigator.clipboard.writeText(html).then(() => {
-                          toast.success("Copied to clipboard");
-                        });
-                      }}
-                      className="flex items-center gap-1 text-xs px-2 py-0.5 rounded transition-opacity hover:opacity-70"
-                      style={{
-                        background: "rgba(2,132,199,0.1)",
-                        color: theme.textSecondary,
-                        border: `1px solid rgba(2,132,199,0.2)`,
-                      }}
+                      onClick={() => navigator.clipboard.writeText(html).then(() => toast.success("Copied to clipboard"))}
+                      className="flex items-center gap-1 text-xs px-2 py-1 rounded-md transition-colors"
+                      style={{ background: theme.surfaceMuted, color: theme.textMuted }}
                       title="Copy HTML"
                     >
-                      <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <rect width="14" height="14" x="8" y="8" rx="2" ry="2"/>
-                        <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <rect width="14" height="14" x="8" y="8" rx="2" ry="2" />
+                        <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
                       </svg>
                       Copy
                     </button>
                   </div>
                 </div>
                 <pre
-                  className="text-xs p-4 overflow-auto max-h-52 sm:max-h-60 font-mono whitespace-pre-wrap"
+                  className="text-xs p-4 overflow-auto max-h-56 font-mono whitespace-pre-wrap"
                   style={{ background: theme.codeBg, color: theme.codeText }}
                 >
                   {html}
@@ -456,14 +521,10 @@ export default function App() {
               </div>
             )}
 
-            {/* Editor with light blue shadow — explicit height so Monaco/code view has a defined container */}
+            {/* Editor */}
             <div
-              className="rounded-xl overflow-hidden flex flex-col"
-              style={{
-                boxShadow: `0 0 0 1px ${theme.border}, 0 24px 64px rgba(2,132,199,0.15)`,
-                height: "fit-content",
-                // minHeight: "100%",
-              }}
+              className="rounded-2xl overflow-hidden flex flex-col"
+              style={{ boxShadow: `0 0 0 1px ${theme.border}, 0 20px 60px rgba(109,40,217,0.12)`, height: "fit-content" }}
             >
               <CDPEditor
                 ref={editorRef}
@@ -481,38 +542,33 @@ export default function App() {
               />
             </div>
 
-
-
             {/* How to use */}
-            <div className="mt-6 sm:mt-8">
-              <p
-                className="text-xs font-semibold uppercase tracking-widest mb-4"
-                style={{ color: theme.textMuted }}
-              >
+            <div className="mt-10">
+              <p className="text-[11px] font-semibold uppercase tracking-widest mb-4" style={{ color: theme.textMuted }}>
                 How to use
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {HOW_TO_STEPS.map((s) => (
+                {HOW_TO_STEPS.map((s, i) => {
+                  const a = ACCENTS[i % ACCENTS.length];
+                  return (
                   <div
                     key={s.step}
-                    className="rounded-xl p-4 flex gap-4"
-                    style={{
-                      background: theme.bgPanel,
-                      border: `1px solid ${theme.bgPanelBorder}`,
-                    }}
+                    className="rounded-2xl p-5 flex gap-4"
+                    style={{ background: theme.surface, border: `1px solid ${a.border}`, boxShadow: `0 6px 20px ${a.soft}` }}
                   >
                     <span
-                      className="text-2xl font-black flex-shrink-0 leading-none mt-0.5"
-                      style={{ color: "rgba(2,132,199,0.18)", fontVariantNumeric: "tabular-nums" }}
+                      className="text-sm font-bold flex-shrink-0 leading-none mt-0.5 w-8 h-8 rounded-lg flex items-center justify-center"
+                      style={{ color: a.color, background: a.soft, fontVariantNumeric: "tabular-nums" }}
                     >
                       {s.step}
                     </span>
                     <div>
-                      <p className="font-semibold text-sm mb-1" style={{ color: theme.textPrimary }}>{s.title}</p>
+                      <p className="font-semibold text-sm mb-1.5" style={{ color: theme.text }}>{s.title}</p>
                       <p className="text-xs leading-relaxed" style={{ color: theme.textMuted }}>{s.desc}</p>
                     </div>
                   </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
 
@@ -520,15 +576,22 @@ export default function App() {
         </div>
 
         {/* ── Footer ────────────────────────────────────────────────────────── */}
-        <div
-          className="text-center py-5 sm:py-6 text-xs px-4"
-          style={{
-            borderTop: `1px solid ${theme.border}`,
-            color: theme.textMuted,
-          }}
+        <footer
+          className="flex flex-col sm:flex-row items-center justify-between gap-3 max-w-[1300px] mx-auto px-6 py-8 text-xs"
+          style={{ borderTop: `1px solid ${theme.border}`, color: theme.textMuted }}
         >
-          cdp-editor · MIT License
-        </div>
+          <span>
+            © 2026 codematic.io · MIT License
+          </span>
+          <div className="flex items-center gap-5">
+            <a href={NPM_URL} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 hover:underline" style={{ color: theme.textMuted }}>
+              <NpmIcon size={14} /> npm
+            </a>
+            <a href={GITHUB_URL} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 hover:underline" style={{ color: theme.textMuted }}>
+              <GithubIcon size={14} /> GitHub
+            </a>
+          </div>
+        </footer>
 
       </div>
     </>
