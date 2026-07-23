@@ -337,6 +337,8 @@ When **Replace image** is used, the editor remembers the image to replace; the n
 | `onShowPreviewChange` | `(show: boolean) => void` | — | Called when the preview should toggle (e.g. when the user clicks your “Preview” button) |
 | `hideViewToggles` | `boolean` | `false` | When `true`, the package does **not** render its own View HTML, Preview, or Inline CSS buttons. Use with the controlled props above and `ref.inlineCss()` so your external buttons are the only controls |
 | `onOpenImageModal` | `() => void` | — | When provided, the package does **not** show its image picker. Insert Image and Replace Image call this instead; open your own modal and call `ref.insertImage(url)` when the user selects, and `ref.clearImageToReplace()` when the modal closes without selecting |
+| `recentColors` | `string[]` | — | Recently used hex colours shown in the button colour picker (“Recent”) and Ant Design ColorPicker presets. Persist these per workspace in the host app |
+| `onColorUsed` | `(color: string) => void` | — | Fired when the user applies a colour (button background/text or toolbar text colour). Use to update `recentColors` storage |
 
 ---
 

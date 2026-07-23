@@ -5,6 +5,8 @@ export declare const InlineColorPicker: React.FC<{
     defaultColor: string;
     onApply: (color: string) => void;
     buttonLabel?: string;
+    /** Previously used colours shown as Ant Design ColorPicker presets. */
+    recentColors?: string[];
 }>;
 export declare const colorOptions: {
     label: string;
@@ -15,7 +17,7 @@ export declare const createMenuConfig: (handleReplaceImage: () => void, handleDe
 export declare const createButtonMenuConfig: (handleDelete: () => void, handleRemoveBg: () => void, handleRemoveBorder: () => void, handleRemovePadding: () => void, handleBgColorChange: (color: string) => void, handleTextColorChange: (color: string) => void, handleBorderRadiusChange: (radius: string) => void, handlePaddingChange: (padding: string) => void, handleAlign: (alignment: "left" | "center" | "right") => void, currentColors?: {
     background?: string;
     text?: string;
-}) => MenuProps;
+}, recentColors?: string[]) => MenuProps;
 export declare const createLinkMenuConfig: (handleEdit: () => void, handleDelete: () => void, handleTextColorChange: (color: string) => void) => MenuProps;
 export declare const fontOptions: {
     label: string;

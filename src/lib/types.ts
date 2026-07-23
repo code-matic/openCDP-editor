@@ -91,6 +91,18 @@ export interface CDPEditorProps {
    * When the user selects an image, call ref.insertImage(url) to insert or replace.
    */
   onOpenImageModal?: () => void;
+
+  /**
+   * Recently used colours (hex) shown in the button colour picker and text colour picker.
+   * Typically persisted per workspace by the host app.
+   */
+  recentColors?: string[];
+
+  /**
+   * Called when the user applies a colour (button background/text, or toolbar text colour).
+   * Use this to persist the colour into workspace recent-colour history.
+   */
+  onColorUsed?: (color: string) => void;
 }
 
 /**

@@ -47,13 +47,20 @@ export const InlineColorPicker: React.FC<{
   defaultColor: string;
   onApply: (color: string) => void;
   buttonLabel?: string;
-}> = ({ defaultColor, onApply, buttonLabel = "Custom color" }) => {
+  /** Previously used colours shown as Ant Design ColorPicker presets. */
+  recentColors?: string[];
+}> = ({ defaultColor, onApply, buttonLabel = "Custom color", recentColors }) => {
   const [tempColor, setTempColor] = useState(defaultColor);
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
     setTempColor(defaultColor);
   }, [defaultColor]);
+
+  const presets =
+    recentColors && recentColors.length > 0
+      ? [{ label: "Recent", colors: recentColors }]
+      : undefined;
 
   return (
     <div onClick={stopMenuClose} onMouseDown={stopMenuClose}>
@@ -62,6 +69,7 @@ export const InlineColorPicker: React.FC<{
         open={open}
         onOpenChange={setOpen}
         onChange={(c) => setTempColor(c.toHexString())}
+        presets={presets}
         getPopupContainer={(node) => node.parentElement ?? document.body}
         panelRender={(panel) => (
           <div onClick={stopMenuClose} onMouseDown={stopMenuClose}>
@@ -213,7 +221,8 @@ export const createButtonMenuConfig = (
   handleBorderRadiusChange: (radius: string) => void,
   handlePaddingChange: (padding: string) => void,
   handleAlign: (alignment: "left" | "center" | "right") => void,
-  currentColors?: { background?: string; text?: string }
+  currentColors?: { background?: string; text?: string },
+  recentColors?: string[]
 ): MenuProps => ({
   items: [
     {
@@ -227,9 +236,25 @@ export const createButtonMenuConfig = (
               defaultColor={currentColors?.background ?? "#3b82f6"}
               onApply={handleBgColorChange}
               buttonLabel="Custom background"
+              recentColors={recentColors}
             />
           ),
         },
+        ...(recentColors && recentColors.length > 0
+          ? [
+              { type: "divider" as const },
+              {
+                key: "bg-recent",
+                type: "group" as const,
+                label: "Recent",
+                children: recentColors.map((color) => ({
+                  key: `bg-recent-${color}`,
+                  label: colorLabel(color, color.toUpperCase()),
+                  onClick: () => handleBgColorChange(color),
+                })),
+              },
+            ]
+          : []),
         { type: "divider" },
         ...buttonBgPresets.map((p) => ({
           key: p.key,
@@ -249,9 +274,25 @@ export const createButtonMenuConfig = (
               defaultColor={currentColors?.text ?? "#ffffff"}
               onApply={handleTextColorChange}
               buttonLabel="Custom text color"
+              recentColors={recentColors}
             />
           ),
         },
+        ...(recentColors && recentColors.length > 0
+          ? [
+              { type: "divider" as const },
+              {
+                key: "text-recent",
+                type: "group" as const,
+                label: "Recent",
+                children: recentColors.map((color) => ({
+                  key: `text-recent-${color}`,
+                  label: colorLabel(color, color.toUpperCase()),
+                  onClick: () => handleTextColorChange(color),
+                })),
+              },
+            ]
+          : []),
         { type: "divider" },
         ...buttonTextPresets.map((p) => ({
           key: p.key,

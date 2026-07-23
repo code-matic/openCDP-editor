@@ -312,6 +312,8 @@ const CDPEditorInner = (
     hideViewToggles = false,
     onOpenImageModal,
     insertableAttributes,
+    recentColors,
+    onColorUsed,
   }: CDPEditorProps,
   ref: React.ForwardedRef<CDPEditorHandle>
 ) => {
@@ -727,6 +729,21 @@ const CDPEditorInner = (
     changeHighlightColor(color, handleEditorChange, setIframeContent, () => { }, savedSelection);
     setSelectedColor(color);
     setPickerOpen(false);
+    onColorUsed?.(color);
+  };
+
+  const rememberAndApplyButtonBg = (color: string) => {
+    if (selectedButton?.element) {
+      updateButtonStyleInEditor(selectedButton.element, color, setIframeContent, () => setSelectedButton(null));
+    }
+    onColorUsed?.(color);
+  };
+
+  const rememberAndApplyButtonText = (color: string) => {
+    if (selectedButton?.element) {
+      updateButtonTextColorInEditor(selectedButton.element, color, setIframeContent, () => setSelectedButton(null));
+    }
+    onColorUsed?.(color);
   };
 
   const applyFontFamily = (font: string) => {
@@ -855,15 +872,16 @@ const CDPEditorInner = (
       () => selectedButton?.element && removeButtonBackgroundInEditor(selectedButton.element, setIframeContent, () => setSelectedButton(null)),
       () => selectedButton?.element && removeButtonBorderInEditor(selectedButton.element, setIframeContent, () => setSelectedButton(null)),
       () => selectedButton?.element && removeButtonPaddingInEditor(selectedButton.element, setIframeContent, () => setSelectedButton(null)),
-      (color) => selectedButton?.element && updateButtonStyleInEditor(selectedButton.element, color, setIframeContent, () => setSelectedButton(null)),
-      (color) => selectedButton?.element && updateButtonTextColorInEditor(selectedButton.element, color, setIframeContent, () => setSelectedButton(null)),
+      rememberAndApplyButtonBg,
+      rememberAndApplyButtonText,
       (radius) => selectedButton?.element && updateButtonBorderRadiusInEditor(selectedButton.element, radius, setIframeContent, () => setSelectedButton(null)),
       (padding) => selectedButton?.element && updateButtonPaddingInEditor(selectedButton.element, padding, setIframeContent, () => setSelectedButton(null)),
       (align) => selectedButton?.element && alignButtonInEditor(selectedButton.element, align, setIframeContent, () => setSelectedButton(null)),
       {
         background: btn ? normalizeColor(btn.style.backgroundColor || "#3b82f6") : "#3b82f6",
         text: btn ? normalizeColor(btn.style.color || "#ffffff") : "#ffffff",
-      }
+      },
+      recentColors
     );
     return {
       ...base,
@@ -1021,6 +1039,11 @@ const CDPEditorInner = (
                     if (open) { saveSelectionBeforeDropdown(); setTempColor(selectedColor); }
                   }}
                   onChange={(c) => setTempColor(c.toHexString())}
+                  presets={
+                    recentColors && recentColors.length > 0
+                      ? [{ label: "Recent", colors: recentColors }]
+                      : undefined
+                  }
                   panelRender={(panel) => (
                     <div>
                       {panel}
