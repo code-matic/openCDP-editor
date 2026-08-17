@@ -109,30 +109,32 @@ const HOW_TO_STEPS = [
   },
 ];
 
-// ── Theme tokens ──────────────────────────────────────────────────────────────
+// ── Theme tokens (#000144 brand) ──────────────────────────────────────────────
+
+const BRAND = "#000144";
 
 const theme = {
-  bg: "#f6f7fb",
+  brand: BRAND,
+  bg: "#f3f4f9",
   surface: "#ffffff",
-  surfaceMuted: "#f1f2f9",
-  border: "#e5e7f0",
-  borderStrong: "#d4d7e8",
-  text: "#1a1a2e",
-  textMuted: "#6b6f8a",
-  accent: "#6d28d9",
-  accentHover: "#5b21b6",
-  accentSoft: "#f3edff",
-  gradient: "linear-gradient(135deg, #7c3aed 0%, #6366f1 45%, #ec4899 100%)",
-  codeBg: "#1a1a2e",
-  codeText: "#c7d2fe",
+  surfaceMuted: "#eceef6",
+  border: "rgba(0, 1, 68, 0.1)",
+  borderStrong: "rgba(0, 1, 68, 0.18)",
+  text: BRAND,
+  textMuted: "#5a5a7a",
+  accent: BRAND,
+  accentHover: "#0000aa",
+  accentSoft: "#e8eaf5",
+  gradient: `linear-gradient(135deg, ${BRAND} 0%, #1a1a7a 55%, #2d2d9e 100%)`,
+  codeBg: BRAND,
+  codeText: "#c8cce8",
 };
 
-// Rotating accent colors for feature ticks & how-to cards.
 const ACCENTS = [
-  { color: "#7c3aed", soft: "#f3edff", border: "#e6d9ff" }, // violet
-  { color: "#2563eb", soft: "#e8f0ff", border: "#d3e2ff" }, // blue
-  { color: "#0891b2", soft: "#e0f7fb", border: "#c2ecf3" }, // cyan
-  { color: "#db2777", soft: "#fdeaf3", border: "#fbd4e6" }, // pink
+  { color: BRAND, soft: "#e8eaf5", border: "#d0d4e8" },
+  { color: "#1a1a7a", soft: "#eceef8", border: "#d4d8eb" },
+  { color: "#2d3a8c", soft: "#eef0fa", border: "#d8dcf0" },
+  { color: "#003366", soft: "#e6edf5", border: "#cdd8e8" },
 ];
 
 // ── Inline icons ──────────────────────────────────────────────────────────────
@@ -276,7 +278,7 @@ export default function App() {
         className="min-h-screen"
         style={{
           color: theme.text,
-          background: `radial-gradient(1200px 600px at 50% -200px, #ede9fe 0%, rgba(237,233,254,0) 60%), radial-gradient(900px 500px at 100% 10%, #fce7f3 0%, rgba(252,231,243,0) 55%), ${theme.bg}`,
+          background: `radial-gradient(1200px 600px at 50% -200px, rgba(0,1,68,0.07) 0%, rgba(0,1,68,0) 60%), radial-gradient(900px 500px at 100% 10%, rgba(0,1,68,0.05) 0%, rgba(0,1,68,0) 55%), ${theme.bg}`,
         }}
       >
 
@@ -285,7 +287,7 @@ export default function App() {
           className="flex items-center justify-between px-4 sm:px-8 py-3"
           style={{
             borderBottom: `1px solid ${theme.border}`,
-            background: "rgba(246,247,251,0.75)",
+            background: "rgba(255,255,255,0.85)",
             backdropFilter: "blur(12px)",
             position: "sticky",
             top: 0,
@@ -296,7 +298,7 @@ export default function App() {
           <div className="flex items-center gap-2.5 min-w-0">
             <div
               className="w-8 h-8 flex-shrink-0 rounded-lg flex items-center justify-center font-bold text-sm"
-              style={{ background: theme.gradient, color: "#fff", boxShadow: "0 4px 12px rgba(124,58,237,0.35)" }}
+              style={{ background: theme.brand, color: "#fff", boxShadow: "0 4px 12px rgba(0,1,68,0.35)" }}
             >
               C
             </div>
@@ -344,7 +346,7 @@ export default function App() {
               className="text-xs px-3 py-2 rounded-lg font-medium transition-colors whitespace-nowrap"
               style={
                 showOutput
-                  ? { background: theme.text, color: "#fff" }
+                  ? { background: theme.brand, color: "#fff" }
                   : { background: theme.surface, color: theme.text, border: `1px solid ${theme.border}` }
               }
             >
@@ -388,7 +390,7 @@ export default function App() {
             className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-3 py-1 rounded-full mb-6 tracking-wide"
             style={{ background: theme.accentSoft, color: theme.accent, border: `1px solid ${ACCENTS[0].border}` }}
           >
-            <span className="w-1.5 h-1.5 rounded-full" style={{ background: theme.gradient }} />
+            <span className="w-1.5 h-1.5 rounded-full" style={{ background: theme.brand }} />
             Open-source · MIT licensed
           </div>
 
@@ -398,15 +400,7 @@ export default function App() {
           >
             The email editor
             <br />
-            <span
-              style={{
-                background: theme.gradient,
-                WebkitBackgroundClip: "text",
-                backgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-                color: "transparent",
-              }}
-            >
+            <span style={{ color: theme.brand }}>
               your users deserve.
             </span>
           </h1>
@@ -436,7 +430,7 @@ export default function App() {
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-2 text-sm font-semibold px-5 py-2.5 rounded-xl transition-transform hover:-translate-y-0.5"
-              style={{ background: theme.gradient, color: "#fff", boxShadow: "0 8px 24px rgba(124,58,237,0.35)" }}
+              style={{ background: theme.brand, color: "#fff", boxShadow: "0 8px 24px rgba(0,1,68,0.3)" }}
             >
               <GithubIcon size={15} />
               Star on GitHub
@@ -524,7 +518,7 @@ export default function App() {
             {/* Editor */}
             <div
               className="rounded-2xl overflow-hidden flex flex-col"
-              style={{ boxShadow: `0 0 0 1px ${theme.border}, 0 20px 60px rgba(109,40,217,0.12)`, height: "fit-content" }}
+              style={{ boxShadow: `0 0 0 1px ${theme.border}, 0 20px 60px rgba(0,1,68,0.12)`, height: "fit-content" }}
             >
               <CDPEditor
                 ref={editorRef}
@@ -584,9 +578,6 @@ export default function App() {
             © 2026 codematic.io · MIT License
           </span>
           <div className="flex items-center gap-5">
-            <a href={NPM_URL} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 hover:underline" style={{ color: theme.textMuted }}>
-              <NpmIcon size={14} /> npm
-            </a>
             <a href={GITHUB_URL} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 hover:underline" style={{ color: theme.textMuted }}>
               <GithubIcon size={14} /> GitHub
             </a>
