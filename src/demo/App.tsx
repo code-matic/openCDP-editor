@@ -204,7 +204,7 @@ const AttributePanel: React.FC<AttributePanelProps> = ({ editorRef, customText, 
         value={customText}
         onChange={(e) => setCustomText(e.target.value)}
         placeholder="Type anything…"
-        className="w-full text-xs rounded-lg px-2.5 py-2 resize-none focus:outline-none transition-colors"
+        className="w-full text-xs rounded-lg px-2.5 py-2 resize-none focus:outline-hidden transition-colors"
         style={{
           background: theme.surfaceMuted,
           border: `1px solid ${theme.border}`,
@@ -297,7 +297,7 @@ export default function App() {
           {/* Brand */}
           <div className="flex items-center gap-2.5 min-w-0">
             <div
-              className="w-8 h-8 flex-shrink-0 rounded-lg flex items-center justify-center font-bold text-sm"
+              className="w-8 h-8 shrink-0 rounded-lg flex items-center justify-center font-bold text-sm"
               style={{ background: theme.brand, color: "#fff", boxShadow: "0 4px 12px rgba(0,1,68,0.35)" }}
             >
               C
@@ -313,7 +313,7 @@ export default function App() {
           </div>
 
           {/* Links */}
-          <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+          <div className="flex items-center gap-1 sm:gap-2 shrink-0">
             <a
               href={NPM_URL}
               target="_blank"
@@ -375,7 +375,7 @@ export default function App() {
                 type="checkbox"
                 checked={readOnly}
                 onChange={(e) => setReadOnly(e.target.checked)}
-                className="rounded"
+                className="rounded-sm"
                 style={{ accentColor: theme.accent }}
               />
               Read-only mode
@@ -461,13 +461,13 @@ export default function App() {
         <div className="max-w-[1300px] mx-auto px-4 sm:px-6 pb-20 flex flex-col lg:flex-row gap-5">
 
           {/* Desktop sidebar */}
-          <div className="hidden lg:flex w-56 flex-shrink-0 flex-col gap-3">
+          <div className="hidden lg:flex w-56 shrink-0 flex-col gap-3">
             <label className="flex items-center gap-2 text-xs cursor-pointer select-none px-1" style={{ color: theme.textMuted }}>
               <input
                 type="checkbox"
                 checked={readOnly}
                 onChange={(e) => setReadOnly(e.target.checked)}
-                className="rounded"
+                className="rounded-sm"
                 style={{ accentColor: theme.accent }}
               />
               Read-only mode
@@ -551,7 +551,7 @@ export default function App() {
                     style={{ background: theme.surface, border: `1px solid ${a.border}`, boxShadow: `0 6px 20px ${a.soft}` }}
                   >
                     <span
-                      className="text-sm font-bold flex-shrink-0 leading-none mt-0.5 w-8 h-8 rounded-lg flex items-center justify-center"
+                      className="text-sm font-bold shrink-0 leading-none mt-0.5 w-8 h-8 rounded-lg flex items-center justify-center"
                       style={{ color: a.color, background: a.soft, fontVariantNumeric: "tabular-nums" }}
                     >
                       {s.step}
