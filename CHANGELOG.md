@@ -6,6 +6,21 @@ This project follows [Semantic Versioning](https://semver.org/) and the [Keep a 
 
 ---
 
+## [Unreleased]
+
+### Security
+
+- **Editor XSS hardening** — HTML rendered into the WYSIWYG canvas is now stripped of `<script>`/`<iframe>`/`<object>`/`<embed>`/`<base>` elements, inline `on*` event handlers and `javascript:`/`vbscript:`/`data:` URLs (inline `data:image/*` is still allowed). Previously, a template containing e.g. `<img onerror=…>` executed in the host app's origin as soon as it was loaded.
+- **Sandboxed preview** — the phone preview `<iframe>` now uses `sandbox`, so scripts in previewed HTML can no longer run with the host page's origin.
+- **Link/button URL validation** — Insert Link, Edit Link and Button dialogs reject `javascript:`, `vbscript:` and `data:` URLs.
+- **Dependencies** — resolved all `npm audit` findings (`source-map-js`, `postcss-selector-parser`, `braces`, `micromatch`, `sprintf-js`, …) by upgrading `source-map-js`, the demo's Tailwind CSS to v4, and `vite-plugin-dts` to v5.
+
+### Fixed
+
+- **`@codematic.io/cdp-editor/style.css` import** — the library build emitted `dist/cdp-editor.css` while `package.json` exports pointed at `dist/style.css`, so the documented import failed to resolve. The build now emits `dist/style.css`.
+
+---
+
 ## [4.0.2] — 2026-03-06
 
 ### Added
