@@ -25,6 +25,8 @@ export default defineConfig({
     lib: {
       entry: path.resolve(__dirname, "src/lib/index.ts"),
       name: "EmailEditor",
+      // Must match the "./style.css" entry in package.json exports
+      cssFileName: "style",
       fileName: (format) => `email-editor.${format}.${format === "es" ? "js" : "cjs"}`,
     },
     rollupOptions: {

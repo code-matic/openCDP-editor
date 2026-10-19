@@ -26,6 +26,8 @@ export const PhonePreview: React.FC<PhonePreviewProps> = ({ srcDoc }) => {
           <iframe
             srcDoc={srcDoc}
             title="Email Preview"
+            // No allow-scripts/allow-same-origin: previewed HTML must not run in the host origin
+            sandbox="allow-popups allow-popups-to-escape-sandbox"
             className="max-w-[400px] w-full h-full bg-white"
             style={{ border: "none", paddingTop: "40px" }}
           />

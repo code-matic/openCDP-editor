@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { Suspense, lazy } from "react";
+import React, { Suspense, lazy, useMemo } from "react";
+import { sanitizeEditorHtml } from "../utils/editor-utils";
 
 // Lazy-load rsw to keep initial bundle small and avoid SSR issues
 const ClientEditor = lazy(() => import("react-simple-wysiwyg"));
@@ -23,6 +24,9 @@ const WysiwygEditor: React.FC<WysiwygEditorProps> = ({
   onFocus,
   onBlur,
 }) => {
+  // The editor renders into the host page's DOM, so untrusted template HTML must not carry script
+  const safeValue = useMemo(() => sanitizeEditorHtml(value), [value]);
+
   const loading = (
     <div className="h-full min-h-[300px] bg-gray-100 animate-pulse rounded flex items-center justify-center text-gray-400 text-sm">
       Loading editor…
@@ -33,7 +37,7 @@ const WysiwygEditor: React.FC<WysiwygEditorProps> = ({
     <div {...containerProps}>
       <Suspense fallback={loading}>
         <ClientEditor
-          value={value}
+          value={safeValue}
           onChange={onChange}
           placeholder={placeholder}
           spellCheck={false}
