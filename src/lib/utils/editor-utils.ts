@@ -18,6 +18,49 @@ export function validateLiquidTemplate(tpl: string): { valid: boolean; error?: E
   }
 }
 
+// Schemes that execute script when a link is followed or a resource is loaded
+const UNSAFE_URL_SCHEME = /^(?:javascript|vbscript|data):/i;
+const URL_ATTRIBUTES = ["href", "src", "action", "formaction", "xlink:href"];
+
+export function isSafeUrl(url: string): boolean {
+  // Browsers ignore whitespace/control characters inside the scheme, e.g. "java\tscript:"
+  const normalized = url.replace(/[\u0000- \u007f]/g, "");
+  // Inline base64 images are common in email HTML and cannot run script from an <img>
+  if (/^data:image\//i.test(normalized)) return true;
+  return !UNSAFE_URL_SCHEME.test(normalized);
+}
+
+/**
+ * Strips script-capable markup (script tags, inline event handlers and
+ * javascript:/data: URLs) before HTML is rendered into the live editor DOM.
+ * Returns the input unchanged when nothing needed removing, so normal edits
+ * never cause the editor to re-render and lose the caret.
+ */
+export function sanitizeEditorHtml(html: string): string {
+  if (typeof DOMParser === "undefined" || !html) return html;
+  const doc = new DOMParser().parseFromString(html, "text/html");
+  let modified = false;
+
+  doc.querySelectorAll("script, iframe, object, embed, base").forEach((el) => {
+    el.remove();
+    modified = true;
+  });
+
+  doc.querySelectorAll("*").forEach((el) => {
+    for (const attr of Array.from(el.attributes)) {
+      const name = attr.name.toLowerCase();
+      if (name.startsWith("on") || (URL_ATTRIBUTES.includes(name) && !isSafeUrl(attr.value))) {
+        el.removeAttribute(attr.name);
+        modified = true;
+      }
+    }
+  });
+
+  if (!modified) return html;
+  const isFullDocument = /<html[\s>]/i.test(html);
+  return isFullDocument ? "<!DOCTYPE html>\n" + doc.documentElement.outerHTML : doc.body.innerHTML;
+}
+
 export function replaceBodyContent(originalHtml: string, newHtml: string): string {
   const parser = new DOMParser();
   const originalDoc = parser.parseFromString(originalHtml, "text/html");

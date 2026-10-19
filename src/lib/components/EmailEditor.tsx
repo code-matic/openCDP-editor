@@ -55,6 +55,7 @@ import {
   removeButtonBorderInEditor,
   removeButtonPaddingInEditor,
   syncEditorContentToState,
+  isSafeUrl,
 } from "../utils/editor-utils";
 import { handleInlineCSS, needsInliningDetailed } from "../utils/inliner";
 import liquidEngine from "../utils/liquid-engine";
@@ -822,6 +823,10 @@ const CDPEditorInner = (
   const handleButtonConfirm = (values: Record<string, string>) => {
     const { buttonText, buttonUrl } = values;
     if (!buttonText || !buttonUrl) return;
+    if (!isSafeUrl(buttonUrl)) {
+      toast.error("That URL scheme is not allowed.");
+      return;
+    }
     if (editingButton) {
       editingButton.textContent = buttonText;
       editingButton.href = buttonUrl;
@@ -1296,6 +1301,10 @@ const CDPEditorInner = (
           { name: "url", label: "URL", placeholder: "https://", defaultValue: editingLink?.getAttribute("href") ?? "", required: true },
         ]}
         onConfirm={({ linkText, url }) => {
+          if (!isSafeUrl(url)) {
+            toast.error("That URL scheme is not allowed.");
+            return;
+          }
           if (editingLink) {
             editingLink.textContent = linkText;
             editingLink.href = url;
@@ -1316,6 +1325,10 @@ const CDPEditorInner = (
           { name: "linkText", label: "Link Text", placeholder: "Displayed text (optional)", required: false },
         ]}
         onConfirm={({ url, linkText }) => {
+          if (url && !isSafeUrl(url)) {
+            toast.error("That URL scheme is not allowed.");
+            return;
+          }
           setShowLinkModal(false);
           const editor = document.querySelector(".rsw-editor .rsw-ce") as HTMLElement | null;
           if (!editor || !url) return;
