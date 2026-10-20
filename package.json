@@ -25,7 +25,7 @@
   "homepage": "https://cdp-editor-064.web.app",
   "repository": {
     "type": "git",
-    "url": "https://github.com/code-matic/openCDP-editor"
+    "url": "git+https://github.com/code-matic/openCDP-editor.git"
   },
   "keywords": [
     "React",
