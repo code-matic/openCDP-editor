@@ -6,7 +6,7 @@ This project follows [Semantic Versioning](https://semver.org/) and the [Keep a 
 
 ---
 
-## [Unreleased]
+## [4.4.1] — 2026-10-20
 
 ### Security
 

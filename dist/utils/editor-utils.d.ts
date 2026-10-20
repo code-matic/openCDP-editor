@@ -3,6 +3,14 @@ export declare function validateLiquidTemplate(tpl: string): {
     valid: boolean;
     error?: Error;
 };
+export declare function isSafeUrl(url: string): boolean;
+/**
+ * Strips script-capable markup (script tags, inline event handlers and
+ * javascript:/data: URLs) before HTML is rendered into the live editor DOM.
+ * Returns the input unchanged when nothing needed removing, so normal edits
+ * never cause the editor to re-render and lose the caret.
+ */
+export declare function sanitizeEditorHtml(html: string): string;
 export declare function replaceBodyContent(originalHtml: string, newHtml: string): string;
 export declare function wrapEmailBodyHtml(body: string): string;
 export declare function getEditorElement(): HTMLElement | null;
